@@ -1,14 +1,13 @@
 #include "entry.h"
 
-int main()
+int main(int argc, char *argv[])
 {
 	SJH::Chapter1::my_application app;
 
-	if (!app.init())
+	if (!app.init(argc, argv))
 		return -1;
 
 	app.run();
-	app.shutdown();
 
 	return 0;
 }

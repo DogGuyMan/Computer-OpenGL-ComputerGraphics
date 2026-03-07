@@ -1,31 +1,35 @@
 #ifndef __CHAPTER_1_ENTRY_H__
 #define __CHAPTER_1_ENTRY_H__
 
+#ifdef _WIN32
+// Windows: freeglut
+#else
+// macOS/Linux: GLFW
 struct GLFWwindow;
+#endif
 
 namespace SJH::Chapter1
 {
 
-class my_application
-{
-public:
-	// 애플리케이션 초기화 (윈도우 생성, OpenGL 컨텍스트)
-	bool init(int width = 800, int height = 600, const char *title = "Chapter1");
+	class my_application
+	{
+	public:
+		bool init(int argc, char *argv[],
+				  int width = 800, int height = 600, const char *title = "Chapter1");
 
-	// 메인 루프 실행
-	void run();
+		void run();
 
-	// 정리
-	void shutdown();
+		virtual void render();
 
-	// 매 프레임 렌더링 (오버라이드 용도)
-	virtual void render(double currentTime);
+		virtual ~my_application() = default;
 
-	virtual ~my_application() = default;
-
-protected:
-	GLFWwindow *window = nullptr;
-};
+	protected:
+#ifdef _WIN32
+		int window = 0;
+#else
+		GLFWwindow *window = nullptr;
+#endif
+	};
 
 } // namespace SJH::Chapter1
 
