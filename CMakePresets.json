@@ -11,25 +11,13 @@
             }
         },
         {
-            "name": "base-macos",
+            "name": "base-ninja",
             "hidden": true,
             "inherits": "base",
             "condition": {
-                "type": "equals",
+                "type": "notEquals",
                 "lhs": "${hostSystemName}",
-                "rhs": "Darwin"
-            },
-            "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/install"
-            }
-        },
-        {
-            "name": "base-mingw",
-            "hidden": true,
-            "inherits": "base",
-            "toolchainFile": "${sourceDir}/cmake/mingw-w64.cmake",
-            "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/install-mingw"
+                "rhs": "Windows"
             }
         },
         {
@@ -43,38 +31,21 @@
                 "rhs": "Windows"
             },
             "cacheVariables": {
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/install-msvc"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
         },
         {
-            "name": "debug",
-            "inherits": "base-macos",
-            "displayName": "Debug (macOS)",
+            "name": "ninja",
+            "inherits": "base-ninja",
+            "displayName": "Debug (Ninja)",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
-            "name": "release",
-            "inherits": "base-macos",
-            "displayName": "Release (macOS)",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
-        },
-        {
-            "name": "debug-mingw",
-            "inherits": "base-mingw",
-            "displayName": "Debug (Windows MinGW)",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "release-mingw",
-            "inherits": "base-mingw",
-            "displayName": "Release (Windows MinGW)",
+            "name": "ninja-release",
+            "inherits": "base-ninja",
+            "displayName": "Release (Ninja)",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
@@ -86,11 +57,9 @@
         }
     ],
     "buildPresets": [
-        { "name": "debug", "configurePreset": "debug" },
-        { "name": "release", "configurePreset": "release" },
-        { "name": "debug-mingw", "configurePreset": "debug-mingw" },
-        { "name": "release-mingw", "configurePreset": "release-mingw" },
-        { "name": "msvc-debug", "configurePreset": "msvc", "configuration": "Debug" },
+        { "name": "ninja", "configurePreset": "ninja" },
+        { "name": "ninja-release", "configurePreset": "ninja-release" },
+        { "name": "msvc", "configurePreset": "msvc", "configuration": "Debug" },
         { "name": "msvc-release", "configurePreset": "msvc", "configuration": "Release" }
     ]
 }

@@ -11,8 +11,10 @@ include(cmake/Dependency.cmake)
 # ______ 설정 헤더 (config.hpp) ______
 add_subdirectory(config)
 
-# ______ Source modules (내부 라이브러리) ______
-add_subdirectory(src)
+# ______ Source modules (공용 라이브러리, 존재 시) ______
+if(EXISTS ${CMAKE_SOURCE_DIR}/src/CMakeLists.txt)
+    add_subdirectory(src)
+endif()
 
-# ______ 애플리케이션 (실행 파일 + 과제) ______
-add_subdirectory(app)
+# ______ 챕터별 실행 파일 ______
+add_subdirectory(apps)
