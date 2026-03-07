@@ -1,13 +1,17 @@
 #include "entry.h"
 
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
+
 int main(int argc, char *argv[])
 {
-	SJH::Chapter1::my_application app;
-
-	if (!app.init(argc, argv))
-		return -1;
-
-	app.run();
-
-	return 0;
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	glutCreateWindow("example");
+	glutReshapeFunc(SJH::Chapter1::reshape);
+	glutDisplayFunc(SJH::Chapter1::display);
+	glutMainLoop();
 }

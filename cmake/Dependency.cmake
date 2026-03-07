@@ -5,7 +5,7 @@ set(EXTERN_DIR ${CMAKE_SOURCE_DIR}/extern)
 # ______ OpenGL (시스템) ______
 find_package(OpenGL REQUIRED)
 
-# ______ 윈도우 시스템 (플랫폼별) ______
+# ______ GLUT (플랫폼별) ______
 if(WIN32)
     # Windows (MSVC) — freeglut 동적 라이브러리
     set(FREEGLUT_ROOT ${EXTERN_DIR}/freeglut)
@@ -16,7 +16,7 @@ if(WIN32)
         IMPORTED_IMPLIB               ${FREEGLUT_ROOT}/lib/x64/freeglut.lib
         INTERFACE_INCLUDE_DIRECTORIES ${FREEGLUT_ROOT}/include
     )
-    set(WINDOWING_TARGET freeglut_local)
+    set(GLUT_TARGET freeglut_local)
 
     # DLL 복사 헬퍼 함수
     function(copy_freeglut_dll target)
@@ -26,20 +26,8 @@ if(WIN32)
             COMMENT "${target}: freeglut.dll 복사")
     endfunction()
 else()
-    # macOS/Linux — GLFW + gl3w (OpenGL 3.x Core Profile)
-    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    FetchContent_Declare(glfw
-        GIT_REPOSITORY https://github.com/glfw/glfw.git
-        GIT_TAG        3.4
-        GIT_SHALLOW    TRUE
-    )
-    FetchContent_Declare(gl3w
-        GIT_REPOSITORY https://github.com/skaslev/gl3w.git
-        GIT_TAG        master
-        GIT_SHALLOW    TRUE
-    )
+    find_package(GLUT REQUIRED)
+    set(GLUT_TARGET GLUT::GLUT)
 endif()
 
 # ______ GLM (FetchContent) ______
@@ -66,11 +54,7 @@ FetchContent_Declare(stb
 )
 
 # ______ FetchContent 대상 일괄 다운로드 ______
-if(WIN32)
-    FetchContent_MakeAvailable(glm spdlog stb)
-else()
-    FetchContent_MakeAvailable(glfw gl3w glm spdlog stb)
-endif()
+FetchContent_MakeAvailable(glm spdlog stb)
 
 # ______ INTERFACE 타겟 수동 생성 ______
 add_library(stb INTERFACE)
@@ -81,6 +65,7 @@ add_library(project_deps INTERFACE)
 target_link_libraries(project_deps INTERFACE
     OpenGL::GL
     OpenGL::GLU
+    ${GLUT_TARGET}
     glm::glm
     spdlog::spdlog
     stb
@@ -89,14 +74,8 @@ target_link_libraries(project_deps INTERFACE
 # ______ 플랫폼별 라이브러리 ______
 if(WIN32)
     target_link_libraries(project_deps INTERFACE
-        ${WINDOWING_TARGET}
         opengl32
         gdi32
         winmm
-    )
-else()
-    target_link_libraries(project_deps INTERFACE
-        glfw
-        gl3w
     )
 endif()

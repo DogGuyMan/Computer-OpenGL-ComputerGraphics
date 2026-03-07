@@ -1,145 +1,29 @@
 #include "entry.h"
 
-#ifdef _WIN32
-// ===================== Windows: freeglut =====================
-#include <GL/glut.h>
-#include <iostream>
-
-namespace SJH::Chapter1
-{
-	static my_application *s_instance = nullptr;
-
-	static void display_callback()
-	{
-		if (s_instance)
-		{
-			s_instance->render();
-			glutSwapBuffers();
-		}
-	}
-
-	static void reshape_callback(int width, int height)
-	{
-		glViewport(0, 0, width, height);
-	}
-
-	static void keyboard_callback(unsigned char key, int /*x*/, int /*y*/)
-	{
-		if (key == 27) // ESC
-			exit(0);
-	}
-
-	bool my_application::init(int argc, char *argv[],
-							  int width, int height, const char *title)
-	{
-		s_instance = this;
-
-		glutInit(&argc, argv);
-		glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-		glutInitWindowSize(width, height);
-
-		window = glutCreateWindow(title);
-		if (window <= 0)
-		{
-			std::cerr << "윈도우 생성 실패" << std::endl;
-			return false;
-		}
-
-		std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
-
-		glutDisplayFunc(display_callback);
-		glutReshapeFunc(reshape_callback);
-		glutKeyboardFunc(keyboard_callback);
-		glutIdleFunc(display_callback);
-
-		return true;
-	}
-
-	void my_application::run()
-	{
-		glutMainLoop();
-	}
-
-	void my_application::render()
-	{
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-	}
-
-} // namespace SJH::Chapter1
-
-#else
-// ===================== macOS/Linux: GLFW + gl3w =====================
-#include <GL/gl3w.h>
-#include <GLFW/glfw3.h>
-#include <iostream>
-
-namespace SJH::Chapter1
-{
-	bool my_application::init(int /*argc*/, char * /*argv*/[],
-							  int width, int height, const char *title)
-	{
-		if (!glfwInit())
-		{
-			std::cerr << "GLFW 초기화 실패" << std::endl;
-			return false;
-		}
-
-		// OpenGL 3.3 Core Profile
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
-		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
 #endif
+#include <iostream>
 
-		window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-		if (!window)
-		{
-			std::cerr << "윈도우 생성 실패" << std::endl;
-			glfwTerminate();
-			return false;
-		}
-
-		glfwMakeContextCurrent(window);
-
-		if (gl3wInit())
-		{
-			std::cerr << "gl3w 초기화 실패" << std::endl;
-			glfwTerminate();
-			return false;
-		}
-
-		std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
-
-		int fbWidth, fbHeight;
-		glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
-		glViewport(0, 0, fbWidth, fbHeight);
-
-		return true;
+namespace SJH::Chapter1
+{
+	// window을 크기를 조절할때 호출되는 함수
+	void reshape(int w, int h)
+	{
+		glLoadIdentity();
+		glViewport(0, 0, w, h);
+		gluOrtho2D(0.0, 100.0, 0.0, 100.0); // 비율은 0 또는 1 퍼센트
 	}
 
-	void my_application::run()
+	void display(void)
 	{
-		while (!glfwWindowShouldClose(window))
-		{
-			if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-				glfwSetWindowShouldClose(window, true);
-
-			render();
-
-			glfwSwapBuffers(window);
-			glfwPollEvents();
-		}
-		glfwTerminate();
-	}
-
-	void my_application::render()
-	{
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+		glColor3f(1.0, 0.0, 0.0);
+		// 좌단 위치 (30, 30) & 우상단 위치 (50, 50)
+		glRectf(30.0, 30.0, 50.0, 50.0);
+		// 그래픽 카드 메모리에 그린것을 화면에 넣어놓은 Buffer로 덮어 씌워라.
+		glutSwapBuffers();
 	}
-
 } // namespace SJH::Chapter1
-
-#endif
