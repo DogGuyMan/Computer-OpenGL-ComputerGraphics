@@ -7,7 +7,7 @@ find_package(OpenGL REQUIRED)
 
 # ______ GLUT (플랫폼별) ______
 if(WIN32)
-    # MinGW 크로스빌드 — extern/freeglut 정적 라이브러리 사용
+    # Windows — extern/freeglut 정적 라이브러리 사용
     set(FREEGLUT_ROOT ${EXTERN_DIR}/freeglut)
     add_library(freeglut_local STATIC IMPORTED)
     set_target_properties(freeglut_local PROPERTIES
@@ -15,7 +15,6 @@ if(WIN32)
         INTERFACE_INCLUDE_DIRECTORIES ${FREEGLUT_ROOT}/include
         INTERFACE_COMPILE_DEFINITIONS FREEGLUT_STATIC
     )
-    # freeglut 정적 링크 시 필요한 Windows 시스템 라이브러리
     target_link_libraries(freeglut_local INTERFACE winmm gdi32)
     set(GLUT_TARGET freeglut_local)
 else()
@@ -82,3 +81,19 @@ target_link_libraries(project_deps INTERFACE
     spdlog::spdlog
     stb
 )
+
+# ______ 플랫폼별 프레임워크/라이브러리 ______
+if(APPLE)
+    target_link_libraries(project_deps INTERFACE
+        "-framework Cocoa"
+        "-framework IOKit"
+        "-framework CoreVideo"
+        "-framework CoreFoundation"
+    )
+elseif(WIN32)
+    target_link_libraries(project_deps INTERFACE
+        opengl32
+        gdi32
+        winmm
+    )
+endif()

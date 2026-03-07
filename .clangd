@@ -1,3 +1,8 @@
 CompileFlags:
-  CompilationDatabase: build_debug/
+  CompilationDatabase: build_ninja/
   Add: [-xc++, -std=c++17]
+
+Style:
+  UseTab: Always
+  IndentWidth: 4
+  TabWidth: 4
