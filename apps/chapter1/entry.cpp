@@ -1,85 +1,29 @@
 #include "entry.h"
 
-#include <GL/gl3w.h>
-#include <GLFW/glfw3.h>
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 #include <iostream>
 
 namespace SJH::Chapter1
 {
-
-bool my_application::init(int width, int height, const char *title)
-{
-	// GLFW 초기화
-	if (!glfwInit())
+	// window을 크기를 조절할때 호출되는 함수
+	void reshape(int w, int h)
 	{
-		std::cerr << "GLFW 초기화 실패" << std::endl;
-		return false;
+		glLoadIdentity();
+		glViewport(0, 0, w, h);
+		gluOrtho2D(0.0, 100.0, 0.0, 100.0); // 비율은 0 또는 1 퍼센트
 	}
 
-	// OpenGL 버전 힌트 (3.3 Core)
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-	// 윈도우 생성
-	window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-	if (!window)
+	void display(void)
 	{
-		std::cerr << "윈도우 생성 실패" << std::endl;
-		glfwTerminate();
-		return false;
+		glClear(GL_COLOR_BUFFER_BIT);
+		glColor3f(1.0, 0.0, 0.0);
+		// 좌단 위치 (30, 30) & 우상단 위치 (50, 50)
+		glRectf(30.0, 30.0, 50.0, 50.0);
+		// 그래픽 카드 메모리에 그린것을 화면에 넣어놓은 Buffer로 덮어 씌워라.
+		glutSwapBuffers();
 	}
-
-	glfwMakeContextCurrent(window);
-
-	// gl3w 초기화 (OpenGL 함수 로딩)
-	if (gl3wInit())
-	{
-		std::cerr << "gl3w 초기화 실패" << std::endl;
-		glfwTerminate();
-		return false;
-	}
-
-	std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
-	std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-
-	// 뷰포트 설정
-	int fbWidth, fbHeight;
-	glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
-	glViewport(0, 0, fbWidth, fbHeight);
-
-	return true;
-}
-
-void my_application::run()
-{
-	while (!glfwWindowShouldClose(window))
-	{
-		// ESC 키로 종료
-		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-			glfwSetWindowShouldClose(window, true);
-
-		render(glfwGetTime());
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-}
-
-void my_application::shutdown()
-{
-	glfwTerminate();
-	window = nullptr;
-}
-
-void my_application::render(double /*currentTime*/)
-{
-	// 기본 렌더: 화면 클리어
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-}
-
 } // namespace SJH::Chapter1

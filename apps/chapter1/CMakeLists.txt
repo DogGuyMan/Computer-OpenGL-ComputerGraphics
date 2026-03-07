@@ -2,8 +2,8 @@
 get_filename_component(CHAPTER_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
 # ______ 정적 라이브러리 (entry.cpp 등) ______
-add_library(${CHAPTER_NAME}_lib STATIC entry.cpp)
-set_project_standards(${CHAPTER_NAME}_lib)
+add_library(${CHAPTER_NAME}_lib STATIC entry.cpp) # ?? 
+set_project_standards(${CHAPTER_NAME}_lib) # ??
 target_include_directories(${CHAPTER_NAME}_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${CHAPTER_NAME}_lib PUBLIC project_deps project_config)
 
@@ -23,6 +23,11 @@ endif()
 add_executable(${CHAPTER_NAME} main.cpp)
 set_project_standards(${CHAPTER_NAME})
 target_link_libraries(${CHAPTER_NAME} PRIVATE ${CHAPTER_NAME}_lib)
+
+# ______ 빌드 후 DLL 복사 (Windows) ______
+if(WIN32 AND COMMAND copy_freeglut_dll)
+    copy_freeglut_dll(${CHAPTER_NAME})
+endif()
 
 # ______ 빌드 후 리소스 복사 ______
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)

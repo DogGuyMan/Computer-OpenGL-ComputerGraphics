@@ -7,43 +7,34 @@ find_package(OpenGL REQUIRED)
 
 # ______ GLUT (플랫폼별) ______
 if(WIN32)
-    # Windows — extern/freeglut 정적 라이브러리 사용
+    # Windows (MSVC) — freeglut 동적 라이브러리
     set(FREEGLUT_ROOT ${EXTERN_DIR}/freeglut)
-    add_library(freeglut_local STATIC IMPORTED)
+
+    add_library(freeglut_local SHARED IMPORTED)
     set_target_properties(freeglut_local PROPERTIES
-        IMPORTED_LOCATION       ${FREEGLUT_ROOT}/lib/libfreeglut_static.a
+        IMPORTED_LOCATION             ${FREEGLUT_ROOT}/bin/x64/freeglut.dll
+        IMPORTED_IMPLIB               ${FREEGLUT_ROOT}/lib/x64/freeglut.lib
         INTERFACE_INCLUDE_DIRECTORIES ${FREEGLUT_ROOT}/include
-        INTERFACE_COMPILE_DEFINITIONS FREEGLUT_STATIC
     )
-    target_link_libraries(freeglut_local INTERFACE winmm gdi32)
     set(GLUT_TARGET freeglut_local)
+
+    # DLL 복사 헬퍼 함수
+    function(copy_freeglut_dll target)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${FREEGLUT_ROOT}/bin/x64/freeglut.dll $<TARGET_FILE_DIR:${target}>
+            COMMENT "${target}: freeglut.dll 복사")
+    endfunction()
 else()
     find_package(GLUT REQUIRED)
     set(GLUT_TARGET GLUT::GLUT)
 endif()
-
-# ______ GLFW (FetchContent) ______
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-FetchContent_Declare(glfw
-    GIT_REPOSITORY https://github.com/glfw/glfw.git
-    GIT_TAG        3.4
-    GIT_SHALLOW    TRUE
-)
 
 # ______ GLM (FetchContent) ______
 set(GLM_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(glm
     GIT_REPOSITORY https://github.com/g-truc/glm.git
     GIT_TAG        1.0.1
-    GIT_SHALLOW    TRUE
-)
-
-# ______ gl3w (FetchContent) ______
-FetchContent_Declare(gl3w
-    GIT_REPOSITORY https://github.com/skaslev/gl3w.git
-    GIT_TAG        master
     GIT_SHALLOW    TRUE
 )
 
@@ -63,7 +54,7 @@ FetchContent_Declare(stb
 )
 
 # ______ FetchContent 대상 일괄 다운로드 ______
-FetchContent_MakeAvailable(glfw glm gl3w spdlog stb)
+FetchContent_MakeAvailable(glm spdlog stb)
 
 # ______ INTERFACE 타겟 수동 생성 ______
 add_library(stb INTERFACE)
@@ -75,22 +66,13 @@ target_link_libraries(project_deps INTERFACE
     OpenGL::GL
     OpenGL::GLU
     ${GLUT_TARGET}
-    glfw
     glm::glm
-    gl3w
     spdlog::spdlog
     stb
 )
 
-# ______ 플랫폼별 프레임워크/라이브러리 ______
-if(APPLE)
-    target_link_libraries(project_deps INTERFACE
-        "-framework Cocoa"
-        "-framework IOKit"
-        "-framework CoreVideo"
-        "-framework CoreFoundation"
-    )
-elseif(WIN32)
+# ______ 플랫폼별 라이브러리 ______
+if(WIN32)
     target_link_libraries(project_deps INTERFACE
         opengl32
         gdi32
