@@ -1,7 +1,7 @@
 ﻿#ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 #endif
 #include <cmath>
 
@@ -733,9 +733,18 @@ void mouse(int button, int state, int x, int y) {
         isDragging = true;
         lastX = x;
         lastY = y;
-    } else {
+    } else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
         isDragging = false;
     }
+#ifdef __APPLE__
+    // macOS GLUT: 마우스 휠이 button 3(up)/4(down)으로 전달
+    if (state == GLUT_DOWN) {
+        if (button == 3) { zoom -= 0.4f; glutPostRedisplay(); }
+        if (button == 4) { zoom += 0.4f; glutPostRedisplay(); }
+        if (zoom < 1.0f) zoom = 1.0f;
+        if (zoom > 5.0f) zoom = 5.0f;
+    }
+#endif
 }
 
 void motion(int x, int y) {
@@ -835,7 +844,7 @@ int main(int argc, char** argv) {
     glutKeyboardFunc(keyboard);
     glutMouseFunc(mouse);
     glutMotionFunc(motion);
-#ifndef __APPLE__
+#ifdef FREEGLUT
     glutMouseWheelFunc(mouseWheel);
 #endif
     glutIdleFunc(idle); 

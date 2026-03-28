@@ -13,10 +13,10 @@ function(set_project_standards target)
         $<${_is_msvc}:           /W4 /permissive- /utf-8>
         $<$<NOT:${_is_msvc}>:   -Wall -Wextra -Wpedantic>
         # ______ Debug: warnings-as-errors + 세부 제어 ______
-        $<${_is_debug_msvc}:     /WX /wd4101 /Od /Zi>
+        $<${_is_debug_msvc}:     /WX /wd4100 /wd4101 /Od /Zi>
         $<${_is_debug_gcc}:
             -Werror -g -O0
-            -Wconversion -Warray-bounds
+            -Wconversion -Wdouble-promotion -Warray-bounds
             -Wunused-but-set-variable
             -Wno-error=unused-variable -Wno-error=unused-parameter
             -Wno-error=unused-but-set-variable -Wno-unused-function
