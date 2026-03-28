@@ -1,6 +1,6 @@
 CompileFlags:
-  CompilationDatabase: build_ninja/
-  Add: [-xc++, -std=c++17]
+  CompilationDatabase: build_ninja
+  Add: [-xc++, -std=c++17, -DGL_SILENCE_DEPRECATION]
 
 Style:
   UseTab: Always

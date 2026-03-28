@@ -11,7 +11,7 @@ if [ -z "$TARGET" ]; then
     exit 1
 fi
 
-# 빌드 디렉토리 조합 (CMakePresets.json의 binaryDir: build_${presetName})
+# 빌드 디렉토리 (모든 Ninja 프리셋이 build_ninja 공유)
 if [ "$BUILD_TYPE" = "debug" ]; then
     PRESET="ninja"
 elif [ "$BUILD_TYPE" = "release" ]; then
@@ -25,7 +25,7 @@ if [ -n "$TARGET_KIND" ]; then
     PRESET="ninja-${TARGET_KIND}"
 fi
 
-BUILD_DIR="$ROOT_DIR/build_${PRESET}"
+BUILD_DIR="$ROOT_DIR/build_ninja"
 EXEC_DIR="$BUILD_DIR/bin"
 
 if [ ! -f "$EXEC_DIR/$TARGET" ]; then

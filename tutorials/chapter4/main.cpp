@@ -4,7 +4,7 @@
 #else
 #include <GL/glut.h>
 #endif
-#include "src/chapter1.h"
+#include "src/chapter4.h"
 
 int main(int argc, char *argv[])
 {
@@ -33,9 +33,9 @@ int main(int argc, char *argv[])
 
 	/* 콜백 등록 */
 	// 윈도우 크기 변경 시 발생 콜백
-	glutReshapeFunc(Tutorials::Chapter1::Callbacks::HandleWindowReshapeEvent);
+	glutReshapeFunc(Tutorials::Chapter4::Callbacks::HandleWindowReshapeEvent);
 	// 렌더링 콜백
-    	glutDisplayFunc(Tutorials::Chapter1::Callbacks::HandleDisplayEvent);
+    	glutDisplayFunc(Tutorials::Chapter4::Callbacks::HandleDisplayEvent);
     	// ! glutKeyboardFunc(keyboard); 
 
 	// 메인 루프 실행

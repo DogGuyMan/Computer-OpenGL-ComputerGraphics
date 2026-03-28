@@ -17,6 +17,7 @@ build/
 build-*/
 build_*/
 build_deps/
+compile_commands.json
 html/
 
 ########### external & FetchContent ###########

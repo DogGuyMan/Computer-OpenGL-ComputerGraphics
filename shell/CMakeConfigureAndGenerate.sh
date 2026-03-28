@@ -1,3 +1,4 @@
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_TYPE="${1:-debug}"
 TARGET_KIND="${2:-}" # tutorials, samples, 또는 빈 값(기본 apps만)
 
@@ -16,3 +17,9 @@ if [ -n "$TARGET_KIND" ]; then
 fi
 
 cmake --preset "$PRESET"
+
+# clangd용 compile_commands.json 심볼릭 링크 갱신
+BUILD_DIR="$ROOT_DIR/build_ninja"
+if [ -f "$BUILD_DIR/compile_commands.json" ]; then
+    ln -sf "$BUILD_DIR/compile_commands.json" "$ROOT_DIR/compile_commands.json"
+fi

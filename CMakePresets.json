@@ -14,6 +14,7 @@
             "name": "base-ninja",
             "hidden": true,
             "inherits": "base",
+            "binaryDir": "${sourceDir}/build_ninja",
             "condition": {
                 "type": "notEquals",
                 "lhs": "${hostSystemName}",
@@ -39,7 +40,9 @@
             "inherits": "base-ninja",
             "displayName": "Debug (Ninja)",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TUTORIALS": "OFF",
+                "BUILD_SAMPLES": "OFF"
             }
         },
         {

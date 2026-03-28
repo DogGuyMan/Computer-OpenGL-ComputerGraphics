@@ -21,7 +21,7 @@ function(set_project_standards target)
         $<${_is_debug_msvc}:     /WX /wd4100 /wd4101 /wd4244 /wd4459 /Od /Zi>
         $<${_is_debug_gcc}:
             -Werror -g -O0
-            -Wconversion -Wdouble-promotion -Warray-bounds
+            -Wconversion -Warray-bounds
             -Wunused-but-set-variable
             -Wno-error=unused-variable -Wno-error=unused-parameter
             -Wno-error=unused-but-set-variable -Wno-unused-function
