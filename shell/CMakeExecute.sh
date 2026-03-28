@@ -5,7 +5,8 @@ MEM_CHECK="$3"
 
 if [ -z "$TARGET" ]; then
     echo "사용법: $0 [debug|release] <타겟명> [leaks]"
-    echo "예시:  $0 debug chapter1"
+    echo "예시:  $0 debug OpenGL-ComputerGraphics"
+    echo "       $0 debug LEGOSpiderman"
     exit 1
 fi
 
@@ -18,14 +19,12 @@ else
     exit 1
 fi
 
-# apps/ 또는 samples/ 에서 타겟 탐색
-if [ -d "$BUILD_DIR/apps/$TARGET" ]; then
-    EXEC_DIR="$BUILD_DIR/apps/$TARGET"
-elif [ -d "$BUILD_DIR/samples/$TARGET" ]; then
-    EXEC_DIR="$BUILD_DIR/samples/$TARGET"
-else
-    echo "타겟을 찾을 수 없습니다: $TARGET"
-    echo "검색 경로: $BUILD_DIR/apps/$TARGET, $BUILD_DIR/samples/$TARGET"
+# 실행 파일 경로 (CMAKE_RUNTIME_OUTPUT_DIRECTORY = bin/)
+EXEC_DIR="./$BUILD_DIR/bin"
+
+if [ ! -f "$EXEC_DIR/$TARGET" ]; then
+    echo "실행 파일을 찾을 수 없습니다: $EXEC_DIR/$TARGET"
+    echo "빌드를 먼저 실행하세요."
     exit 1
 fi
 
