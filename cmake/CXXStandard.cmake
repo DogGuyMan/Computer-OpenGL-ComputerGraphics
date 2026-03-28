@@ -8,6 +8,11 @@ function(set_project_standards target)
     set(_is_debug_gcc "$<AND:$<CONFIG:Debug>,$<NOT:${_is_msvc}>>")
     set(_no_error_pound "-Wno-error=#warnings")
 
+    # ______ macOS OpenGL deprecation 경고 억제 ______
+    target_compile_definitions(${target} PRIVATE
+        $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>
+    )
+
     target_compile_options(${target} PRIVATE
         # ______ 공통 경고 ______
         $<${_is_msvc}:           /W4 /permissive- /utf-8>

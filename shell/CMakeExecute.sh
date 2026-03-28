@@ -1,26 +1,32 @@
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_TYPE="${1:-debug}"
-TARGET="$2"
-MEM_CHECK="$3"
+TARGET_KIND="${2:-}" # tutorials, samples, 또는 빈 값(기본 apps)
+TARGET="$3"
+MEM_CHECK="$4"
 
 if [ -z "$TARGET" ]; then
-    echo "사용법: $0 [debug|release] <타겟명> [leaks]"
-    echo "예시:  $0 debug OpenGL-ComputerGraphics"
-    echo "       $0 debug LEGOSpiderman"
+    echo "사용법: $0 [debug|release] [tutorials|samples] <타겟명> [leaks]"
+    echo "예시:  $0 debug \"\" OpenGL-ComputerGraphics"
+    echo "       $0 debug samples LEGOSpiderman"
     exit 1
 fi
 
+# 빌드 디렉토리 조합 (CMakePresets.json의 binaryDir: build_${presetName})
 if [ "$BUILD_TYPE" = "debug" ]; then
-    BUILD_DIR="$ROOT_DIR/build_ninja"
+    PRESET="ninja"
 elif [ "$BUILD_TYPE" = "release" ]; then
-    BUILD_DIR="$ROOT_DIR/build_ninja-release"
+    PRESET="ninja-release"
 else
-    echo "사용법: $0 [debug|release] <타겟명> [leaks]"
+    echo "사용법: $0 [debug|release] [tutorials|samples] <타겟명> [leaks]"
     exit 1
 fi
 
-# 실행 파일 경로 (CMAKE_RUNTIME_OUTPUT_DIRECTORY = bin/)
-EXEC_DIR="./$BUILD_DIR/bin"
+if [ -n "$TARGET_KIND" ]; then
+    PRESET="ninja-${TARGET_KIND}"
+fi
+
+BUILD_DIR="$ROOT_DIR/build_${PRESET}"
+EXEC_DIR="$BUILD_DIR/bin"
 
 if [ ! -f "$EXEC_DIR/$TARGET" ]; then
     echo "실행 파일을 찾을 수 없습니다: $EXEC_DIR/$TARGET"

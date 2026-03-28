@@ -18,15 +18,15 @@ namespace SJH::Chapter1
 		gluOrtho2D(0.0, 50.0, 0.0, 50.0); // 비율은 0 또는 1 퍼센트
 	}
 
-	// void Display1(void)
-	// {
-	// 	glClear(GL_COLOR_BUFFER_BIT); // 색상 버퍼 초기화
-	// 	glColor3f(1.0, 0.0, 0.0);     // 빨간색 설정
-	// 	// 좌단 위치 (30, 30) & 우상단 위치 (50, 50)
-	// 	glRectf(30.0, 30.0, 50.0, 50.0);
-	// 	// 그래픽 카드 메모리에 그린것을 화면에 넣어놓은 Buffer로 덮어 씌워라.
-	// 	glutSwapBuffers();
-	// }
+	void Display1(void)
+	{
+		glClear(GL_COLOR_BUFFER_BIT); // 색상 버퍼 초기화
+		glColor3f(1.0, 0.0, 0.0);     // 빨간색 설정
+		// 좌단 위치 (30, 30) & 우상단 위치 (50, 50)
+		glRectf(30.0, 30.0, 50.0, 50.0);
+		// 그래픽 카드 메모리에 그린것을 화면에 넣어놓은 Buffer로 덮어 씌워라.
+		glutSwapBuffers();
+	}
 
 	// /*
 	// Culling은 면의 앞/뒤를 판단해서 그릴지 말지 결정하는 것이고,

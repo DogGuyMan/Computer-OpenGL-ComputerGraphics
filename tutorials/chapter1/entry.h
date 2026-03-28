@@ -4,7 +4,7 @@
 namespace SJH::Chapter1
 {
 	void Reshape(int w, int h);
-	// void Display1(void);
+	void Display1(void);
 	// void Display2(void);
 	// void Display3(void);
 	// void Display4(void);

@@ -18,8 +18,8 @@ int main(int argc, char *argv[])
 
 	glutCreateWindow("Example");
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-	// glutReshapeFunc(SJH::Chapter1::Reshape);
-	// glutDisplayFunc(SJH::Chapter1::Display1);
+	glutReshapeFunc(SJH::Chapter1::Reshape);
+	glutDisplayFunc(SJH::Chapter1::Display1);
 	// glutDisplayFunc(SJH::Chapter1::Display2);
 	// glutDisplayFunc(SJH::Chapter1::Display3);
 	// glutDisplayFunc(SJH::Chapter1::Display4);
