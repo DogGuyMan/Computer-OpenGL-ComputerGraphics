@@ -17,4 +17,5 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/src/CMakeLists.txt)
 endif()
 
 # ______ 챕터별 실행 파일 ______
-add_subdirectory(apps)
+# add_subdirectory(apps)
+add_subdirectory(samples)
