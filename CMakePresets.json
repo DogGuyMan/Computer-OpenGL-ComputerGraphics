@@ -51,15 +51,51 @@
             }
         },
         {
+            "name": "ninja-tutorials",
+            "inherits": "ninja",
+            "displayName": "Debug + Tutorials",
+            "cacheVariables": {
+                "BUILD_TUTORIALS": "ON"
+            }
+        },
+        {
+            "name": "ninja-samples",
+            "inherits": "ninja",
+            "displayName": "Debug + Samples",
+            "cacheVariables": {
+                "BUILD_SAMPLES": "ON"
+            }
+        },
+        {
             "name": "msvc",
             "inherits": "base-msvc",
             "displayName": "Visual Studio 2022"
+        },
+        {
+            "name": "msvc-tutorials",
+            "inherits": "msvc",
+            "displayName": "VS 2022 + Tutorials",
+            "cacheVariables": {
+                "BUILD_TUTORIALS": "ON"
+            }
+        },
+        {
+            "name": "msvc-samples",
+            "inherits": "msvc",
+            "displayName": "VS 2022 + Samples",
+            "cacheVariables": {
+                "BUILD_SAMPLES": "ON"
+            }
         }
     ],
     "buildPresets": [
-        { "name": "ninja", "configurePreset": "ninja" },
-        { "name": "ninja-release", "configurePreset": "ninja-release" },
-        { "name": "msvc", "configurePreset": "msvc", "configuration": "Debug" },
-        { "name": "msvc-release", "configurePreset": "msvc", "configuration": "Release" }
+        { "name": "ninja",           "configurePreset": "ninja" },
+        { "name": "ninja-release",   "configurePreset": "ninja-release" },
+        { "name": "ninja-tutorials", "configurePreset": "ninja-tutorials" },
+        { "name": "ninja-samples",   "configurePreset": "ninja-samples" },
+        { "name": "msvc",            "configurePreset": "msvc",           "configuration": "Debug" },
+        { "name": "msvc-release",    "configurePreset": "msvc",           "configuration": "Release" },
+        { "name": "msvc-tutorials",  "configurePreset": "msvc-tutorials", "configuration": "Debug" },
+        { "name": "msvc-samples",    "configurePreset": "msvc-samples",   "configuration": "Debug" }
     ]
 }
