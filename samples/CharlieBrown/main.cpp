@@ -1,4 +1,8 @@
-﻿#include <freeglut.h>
+﻿#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 #include <cmath>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -7,6 +11,7 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+#define M_PIf 3.14159265f
 
 float rotateX = -10.0f, rotateY = 0.0f;
 float zoom = 5.0f;
@@ -241,7 +246,7 @@ void drawCharlieBody() {
 
         glBegin(GL_QUAD_STRIP);
         for (int j = 0; j <= slices; ++j) {
-            float theta = 2.0f * M_PI * j / slices;
+            float theta = 2.0f * M_PIf * j / slices;
             float x0 = r0 * cos(theta);
             float z0 = r0 * sin(theta);
             float x1 = r1 * cos(theta);
@@ -271,7 +276,7 @@ void drawCharlieBody() {
     glVertex3f(0.0f, 0.0f, 0.0f);  
 
     for (int j = 0; j <= slices; ++j) {
-        float theta = 2.0f * M_PI * j / slices;
+        float theta = 2.0f * M_PIf * j / slices;
         float r = 0.29f;
         float x = r * cos(theta);
         float z = r * sin(theta);
@@ -294,8 +299,8 @@ void drawCharlieBody() {
     float innerTop = 0.10f, innerBottom = 0.15f;
     float c_height = 0.08f;
 
-    float cutCenter = M_PI / 2.0f;
-    float cutRange = M_PI / 9.0f;
+    float cutCenter = M_PIf / 2.0f;
+    float cutRange = M_PIf / 9.0f;
     float peakHeight = 0.07f;  // 얼마나 파낼지 조절
 
     glPushMatrix();
@@ -312,7 +317,7 @@ void drawCharlieBody() {
     // 1. 바깥면
     glBegin(GL_QUAD_STRIP);
     for (int i = 0; i <= c_slices; ++i) {
-        float angle = 2.0f * M_PI * i / c_slices;
+        float angle = 2.0f * M_PIf * i / c_slices;
         float yOffset = getYOffset(angle);
 
         float x1 = outerTop * cos(angle);
@@ -328,7 +333,7 @@ void drawCharlieBody() {
     // 2. 안쪽면
     glBegin(GL_QUAD_STRIP);
     for (int i = 0; i <= c_slices; ++i) {
-        float angle = 2.0f * M_PI * i / c_slices;
+        float angle = 2.0f * M_PIf * i / c_slices;
         float yOffset = getYOffset(angle);
 
         float x1 = innerBottom * cos(angle);
@@ -344,7 +349,7 @@ void drawCharlieBody() {
     // 3. 상단면 (flat top)
     glBegin(GL_QUAD_STRIP);
     for (int i = 0; i <= c_slices; ++i) {
-        float angle = 2.0f * M_PI * i / c_slices;
+        float angle = 2.0f * M_PIf * i / c_slices;
 
         float x1 = outerTop * cos(angle);
         float z1 = outerTop * sin(angle);
@@ -359,7 +364,7 @@ void drawCharlieBody() {
     // 4. 하단면
     glBegin(GL_QUAD_STRIP);
     for (int i = 0; i <= c_slices; ++i) {
-        float angle = 2.0f * M_PI * i / c_slices;
+        float angle = 2.0f * M_PIf * i / c_slices;
         float yOffset = getYOffset(angle);
 
         float x1 = outerBottom * cos(angle);
@@ -785,7 +790,7 @@ GLuint loadTexture(const char* filename) {
     glBindTexture(GL_TEXTURE_2D, texID);
 
     GLenum format = (channels == 4) ? GL_RGBA : GL_RGB;
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, image);
+    glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(format), width, height, 0, format, GL_UNSIGNED_BYTE, image);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -830,7 +835,9 @@ int main(int argc, char** argv) {
     glutKeyboardFunc(keyboard);
     glutMouseFunc(mouse);
     glutMotionFunc(motion);
+#ifndef __APPLE__
     glutMouseWheelFunc(mouseWheel);
+#endif
     glutIdleFunc(idle); 
 
     // 메인 루프 시작 (이 아래는 절대 실행 안 됨)
