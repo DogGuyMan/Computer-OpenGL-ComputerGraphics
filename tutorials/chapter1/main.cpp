@@ -23,6 +23,6 @@ int main(int argc, char *argv[])
 	// glutDisplayFunc(SJH::Chapter1::Display2);
 	// glutDisplayFunc(SJH::Chapter1::Display3);
 	// glutDisplayFunc(SJH::Chapter1::Display4);
-	glutDisplayFunc(SJH::Chapter1::Display5);
+	// glutDisplayFunc(SJH::Chapter1::Display5);
 	glutMainLoop();
 }

@@ -8,17 +8,17 @@ if(WIN32 AND COMMAND copy_freeglut_dll)
     copy_freeglut_dll(${CMAKE_PROJECT_NAME})
 endif()
 
-# ______ 빌드 후 리소스 복사 ______
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+# ______ 빌드 후 리소스 복사 (프로젝트 루트 기준) ______
+if(EXISTS ${CMAKE_SOURCE_DIR}/resources)
     add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/resources $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/resources
+        ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/resources
         COMMENT "${CMAKE_PROJECT_NAME}: 리소스를 빌드 디렉터리에 복사")
 endif()
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+if(EXISTS ${CMAKE_SOURCE_DIR}/shaders)
     add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/shaders
+        ${CMAKE_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/shaders
         COMMENT "${CMAKE_PROJECT_NAME}: 셰이더를 빌드 디렉터리에 복사")
 endif()
