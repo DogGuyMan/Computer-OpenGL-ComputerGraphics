@@ -1,6 +1,4 @@
 #include "entry.h"
-#include <OpenGL/gl.h>
-#include <OpenGL/gltypes.h>
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -90,7 +88,7 @@ namespace SJH::Chapter1
 
 		glBegin(GL_POINTS); // 점 그리기 시작
 		// glBegin(GL_LINE_STRIP);
-		for (angle = 0; angle <= 2.0 * 3.14; angle += (2.0 * 3.14) / 30.f) // 30개의 점으로 원 그리기
+		for (angle = 0; angle <= 2.0f * 3.14f; angle += (2.0f * 3.14f) / 30.f) // 30개의 점으로 원 그리기
 			glVertex3f(cos(angle) * 0.5f, sin(angle) * 0.5f, 0);	   // 반지름 0.5인 원 위의 점
 		glEnd();							   // 점 그리기 종료
 		glFlush();							   // 렌더링 명령 즉시 실행
