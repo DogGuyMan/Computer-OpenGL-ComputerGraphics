@@ -36,7 +36,7 @@ FetchContent_Declare(stb    GIT_REPOSITORY https://github.com/nothings/stb.git  
 FetchContent_MakeAvailable(glm spdlog stb)
 
 add_library(stb INTERFACE)
-target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
+target_include_directories(stb SYSTEM INTERFACE ${stb_SOURCE_DIR})
 
 # ====== 프로젝트 의존성 통합 타겟 ======
 add_library(project_deps INTERFACE)
