@@ -1,44 +1,87 @@
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
-#include <GL/freeglut.h.h>
+#include <GL/freeglut.h>
 #endif
 
-#include "input.h"
+#include "inputs.h"
 #include "camera.h"
 #include "display.h"
+#include "model.h"
 #include <memory>
+#include <spdlog/spdlog.h>
 
 struct AppContext {
-	std::unique_ptr<Metahuman::Camera> activeCamera;
+	Metahuman::Camera camera;
+	Metahuman::Display display;
+	Metahuman::KeybaordInput input;
+	Metahuman::MouseInput mouse;
 };
 
 static AppContext g_ctx;
 
+/* GLUT 콜백 — 자유 함수에서 g_ctx 인스턴스로 위임 */
+void HandleWindowReshapeEvent(int w, int h) { g_ctx.display.Reshape(w, h, g_ctx.camera); }
+void HandleDisplayEvent() { g_ctx.display.Render(g_ctx.camera); }
+
+void HandleKeyboardInput(unsigned char key, int x, int y) {
+	g_ctx.input.Dispatch(key);
+	glutPostRedisplay();
+}
+
+void HandleMouse(int button, int state, int x, int y) {
+	g_ctx.mouse.HandleMouse(button, state, x, y);
+}
+
+void HandleMotion(int x, int y) {
+	g_ctx.mouse.HandleMotion(x, y);
+}
+
+void QuitProgram() { exit(0); }
+
 int main(int argc, char **argv)
 {
-	/* 1. GLUT 초기화 단계 */
-	// glutInit 이전에 호출해야함.
-	glutInitWindowSize(800, 600); 
-	// 윈도우와 운영체제 컨텍스트 연결
-	glutInit(&argc, argv); 
-
-	// GLUT_DOUBLE : 더블 버퍼링 사용.
-	// 	화면에 보이는 front buffer와 그리는 back buffer 두 개를 두고,
-	// 	그리기 완료 후 glutSwapBuffers()로 교체. 깜빡임(flickering) 방지
-	// GLUT_RGBA : RGBA 색상 모드 사용 (반투명 오브젝트 렌더링 가능)
-	// GLUT_DEPTH : GLUT_DEPTH 추가 = Z-buffer 활성화 3D 물체의 깊이 정보 저장
+	/* 1. GLUT 초기화 */
+	glutInitWindowSize(800, 600);
+	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 
 	/* 2. 윈도우 생성 */
 	int window = glutCreateWindow("Example");
 
 	/* 3. OpenGL 설정 */
-	// 배경색 설정
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-	// 깊이 테스트 활성화
-	glEnable(GL_DEPTH_TEST); 
+	glEnable(GL_DEPTH_TEST);
 
+	/* 4. Context 설정 */
+	g_ctx.display.SetWidth(800);
+	g_ctx.display.Setheight(600);
+	g_ctx.camera.SetFovSpeed(10.0);
+
+	/* 4-1. 모델 등록 */
+	g_ctx.display.AddModel(std::make_unique<Metahuman::Model>());
+
+	/* 5. 입력 바인딩 */
+	g_ctx.input.BindKeyAction('a', [&]() { g_ctx.camera.Zoom(-0.5); });
+	g_ctx.input.BindKeyAction('z', [&]() { g_ctx.camera.Zoom(0.5); });
+	g_ctx.input.BindKeyAction('q', QuitProgram);
+	g_ctx.input.BindKeyAction(27, QuitProgram);
+
+	// 마우스 드래그 → Camera Orbit 회전
+	g_ctx.mouse.BindDragAction([&](int dx, int dy) {
+		// yaw (수평 회전), pitch (수직 회전)
+		g_ctx.camera.Rotate(-dy * 0.5, dx * 0.5, 0);
+	});
+
+	/* 6. GLUT 콜백 등록 */
+	glutReshapeFunc(HandleWindowReshapeEvent);
+	glutDisplayFunc(HandleDisplayEvent);
+	glutKeyboardFunc(HandleKeyboardInput);
+	glutMouseFunc(HandleMouse);
+	glutMotionFunc(HandleMotion);
+
+	/* 7. 메인 루프 */
+	glutMainLoop();
 
 	return 0;
 }

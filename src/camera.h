@@ -1,18 +1,52 @@
 #ifndef __METAHUMAN_CAMERA_H__
 #define __METAHUMAN_CAMERA_H__
+#include <glm/glm.hpp>
 
 namespace Metahuman {
+
+	struct RotateAxis {
+		double pitch;
+		double yaw;
+		double roll;
+		RotateAxis(double pitch, double yaw, double roll) {
+			this->pitch = pitch;
+			this->yaw = yaw;
+			this->roll = roll;
+		}
+	};
+
 	class Camera {
-	private : 
-		double fov = 60.0;
-		double fovSpeed = 1.0;
+	private :
+		double fov;
+		double fovSpeed;
+		double nearClip;
+		double farClip;
+		float aspectRatio;
+		
+		// Orbit 파라미터
+		glm::dvec3 eye;
+		glm::dvec3 center;
+		glm::dvec3 up;
+		RotateAxis axis;
+		double radius;  // center로부터 거리
+
+		void updateEyeFromOrbit();
 	public :
 		Camera();
 		~Camera();
-		void FovIn(void * datas);
-		void FovOut(void * datas);
+
 		double GetFovScale() const;
 		void SetFovSpeed(double fov_speed);
+		double GetRadius() const;
+		RotateAxis GetAxis() const;
+		
+
+		void FovIn();
+		void FovOut();
+		void ApplyProjection(float aspectRatio);
+		void ApplyView();
+		void Rotate(double deltaPitch, double deltaYaw, double deltaRoll);
+		void Zoom(double delta);
 	};
 };
 
