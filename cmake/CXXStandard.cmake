@@ -16,7 +16,7 @@ function(set_project_standards target)
     target_compile_options(${target} PRIVATE
         # ______ 공통 경고 ______
         $<${_is_msvc}:           /W4 /permissive- /utf-8>
-        $<$<NOT:${_is_msvc}>:   -Wall -Wextra -Wpedantic>
+        $<$<NOT:${_is_msvc}>:   -Wall>
         # ______ Debug: warnings-as-errors + 세부 제어 ______
         $<${_is_debug_msvc}:     /WX /wd4100 /wd4101 /wd4244 /wd4459 /Od /Zi>
         $<${_is_debug_gcc}:
