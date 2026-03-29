@@ -1,7 +1,11 @@
 # ______ 실행 파일 (entry point) ______
 add_executable(${CMAKE_PROJECT_NAME} main.cpp)
 set_project_standards(${CMAKE_PROJECT_NAME})
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Module project_config)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE 
+    project_srcs 
+    project_deps 
+    project_config
+)
 
 # ______ 빌드 후 DLL 복사 (Windows) ______
 if(WIN32 AND COMMAND copy_freeglut_dll)

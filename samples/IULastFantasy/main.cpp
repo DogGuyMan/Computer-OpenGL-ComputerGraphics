@@ -1,7 +1,7 @@
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
-#include <GL/glut.h>
+#include <GL/freeglut.h.h>
 #endif
 
 #include <cmath>
@@ -422,7 +422,7 @@ int main (int argc, char** argv)
     glutReshapeFunc (reshape);
     glutMouseFunc(processMouse);
     glutMotionFunc(processMouseMotion);
-	glutKeyboardFunc(keyboard);
+    glutKeyboardFunc(keyboard);
     glutIdleFunc(display);
     glutMainLoop();
     return 0;

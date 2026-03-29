@@ -2,9 +2,9 @@
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
-#include <GL/glut.h>
+#include <GL/freeglut.h.h>
 #endif
-#include "src/chapter1.h"
+#include "chapter1.h"
 
 int main(int argc, char *argv[])
 {

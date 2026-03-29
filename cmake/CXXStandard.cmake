@@ -23,7 +23,7 @@ function(set_project_standards target)
             -Werror -g -O0
             -Wconversion -Warray-bounds
             -Wunused-but-set-variable
-            -Wno-error=unused-variable -Wno-error=unused-parameter
+            -Wno-unused-variable -Wno-error=unused-parameter
             -Wno-error=unused-but-set-variable -Wno-unused-function
             ${_no_error_pound}>
     )
