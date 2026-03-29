@@ -26,3 +26,7 @@ $$
   |$\text{color} = \text{baseColor} \times I$|$\text{color} = \text{baseColor} \times \text{ramp}(I)$|
 
 #### 3). 1D Ramp Texture + glTexGen 
+
+---
+
+업데이트
