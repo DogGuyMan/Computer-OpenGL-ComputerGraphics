@@ -11,6 +11,11 @@ option(BUILD_SAMPLES   "samples/ 빌드 (apps 대신)"   OFF)
 # ______ 실행파일 출력 디렉토리 통합 ______
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+set(PROJECT_RESOURCE_PATH "") 
+if(MSVC)
+    set(PROJECT_RESOURCE_PATH "resources")
+endif()
+
 # ______ CMake 헬퍼 모듈 ______
 include(cmake/CXXStandard.cmake)
 include(cmake/Dependency.cmake)

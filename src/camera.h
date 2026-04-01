@@ -23,7 +23,6 @@ namespace Metahuman {
 		double farClip;
 		float aspectRatio;
 		
-		// Orbit 파라미터
 		glm::dvec3 eye;
 		glm::dvec3 center;
 		glm::dvec3 up;

@@ -4,3 +4,4 @@
 #include <string_view>
 
 static constexpr std::string_view   PROJECT_NAME = "@PROJECT_NAME@";
+static constexpr std::string_view   PROJECT_RESOURCE_PATH = "@PROJECT_RESOURCE_PATH@";

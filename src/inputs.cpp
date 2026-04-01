@@ -7,8 +7,6 @@
 
 using namespace Metahuman;
 
-/* ── KeybaordInput ── */
-
 KeybaordInput::KeybaordInput() : keyBindedActions{} {
 }
 
@@ -29,8 +27,6 @@ void KeybaordInput::Dispatch(unsigned char key) {
 	if(keyBindedActions[key])
 		keyBindedActions[key]();
 }
-
-/* ── MouseInput ── */
 
 MouseInput::MouseInput() : isDragging(false), lastX(0), lastY(0) {
 }

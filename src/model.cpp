@@ -10,5 +10,5 @@ Model::~Model() {
 
 void Model::Draw() {
 	glColor3f(1.0f, 0.0f, 0.0f);
-	glutWireTeapot(1.0);
+	glutSolidSphere(1, 20, 20);
 }

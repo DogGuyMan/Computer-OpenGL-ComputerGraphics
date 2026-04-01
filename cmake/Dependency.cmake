@@ -33,8 +33,9 @@ set(SPDLOG_BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(glm    GIT_REPOSITORY https://github.com/g-truc/glm.git    GIT_TAG 1.0.1   GIT_SHALLOW TRUE)
 FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog.git GIT_TAG v1.15.1 GIT_SHALLOW TRUE)
 FetchContent_Declare(stb    GIT_REPOSITORY https://github.com/nothings/stb.git  GIT_TAG master  GIT_SHALLOW TRUE)
-FetchContent_Declare(imgui  GIT_REPOSITORY https://github.com/ocornut/imgui.git GIT_TAG docking GIT_SHALLOW TRUE)
-FetchContent_MakeAvailable(glm spdlog stb imgui)
+FetchContent_Declare(imgui     GIT_REPOSITORY https://github.com/ocornut/imgui.git     GIT_TAG docking GIT_SHALLOW TRUE)
+FetchContent_Declare(imguizmo  GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git GIT_TAG master GIT_SHALLOW TRUE)
+FetchContent_MakeAvailable(glm spdlog stb imgui imguizmo)
 
 add_library(stb INTERFACE)
 target_include_directories(stb SYSTEM INTERFACE ${stb_SOURCE_DIR})
@@ -61,11 +62,22 @@ if(APPLE)
     target_compile_options(imgui PRIVATE -Wno-macro-redefined)
 endif()
 
+# imguizmo (CMakeLists.txt 없음 — imgui와 동일 방식으로 수동 빌드)
+add_library(imguizmo STATIC
+    ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp
+    ${imguizmo_SOURCE_DIR}/ImCurveEdit.cpp
+    ${imguizmo_SOURCE_DIR}/ImGradient.cpp
+    ${imguizmo_SOURCE_DIR}/ImSequencer.cpp
+    ${imguizmo_SOURCE_DIR}/GraphEditor.cpp
+)
+target_include_directories(imguizmo SYSTEM PUBLIC ${imguizmo_SOURCE_DIR})
+target_link_libraries(imguizmo PUBLIC imgui)
+
 # ====== 프로젝트 의존성 통합 타겟 ======
 add_library(project_deps INTERFACE)
 target_link_libraries(project_deps INTERFACE
     OpenGL::GL OpenGL::GLU
     $<IF:$<BOOL:${WIN32}>,freeglut_local,GLUT::GLUT>
-    glm::glm spdlog::spdlog stb imgui
+    glm::glm spdlog::spdlog stb imgui imguizmo
     $<$<BOOL:${WIN32}>:gdi32 winmm>
 )

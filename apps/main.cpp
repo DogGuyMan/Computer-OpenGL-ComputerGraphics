@@ -7,6 +7,7 @@
 #include "inputs.h"
 #include "camera.h"
 #include "display.h"
+#include "renderer.h"
 #include "model.h"
 #include <memory>
 #include <spdlog/spdlog.h>
@@ -16,13 +17,26 @@ struct AppContext {
 	Metahuman::Display display;
 	Metahuman::KeybaordInput input;
 	Metahuman::MouseInput mouse;
+	Metahuman::Renderer renderer;
 };
 
 static AppContext g_ctx;
 
 /* GLUT 콜백 — 자유 함수에서 g_ctx 인스턴스로 위임 */
-void HandleWindowReshapeEvent(int w, int h) { g_ctx.display.Reshape(w, h, g_ctx.camera); }
-void HandleDisplayEvent() { g_ctx.display.Render(g_ctx.camera); }
+void HandleWindowReshapeEvent(int w, int h) { 
+	g_ctx.display.Reshape(w, h, g_ctx.camera); 
+	glutPostRedisplay();
+}
+
+void HandleDisplayEvent() { 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// 매 프레임 투영 갱신 (FOV 변경 반영)
+	g_ctx.camera.ApplyProjection((float)GetAspectRatio());
+	g_ctx.camera.ApplyView();
+	g_ctx.renderer.Render(g_ctx.camera); 
+
+	glutSwapBuffers();
+}
 
 void HandleKeyboardInput(unsigned char key, int x, int y) {
 	g_ctx.input.Dispatch(key);
@@ -31,10 +45,12 @@ void HandleKeyboardInput(unsigned char key, int x, int y) {
 
 void HandleMouse(int button, int state, int x, int y) {
 	g_ctx.mouse.HandleMouse(button, state, x, y);
+	glutPostRedisplay();
 }
 
 void HandleMotion(int x, int y) {
 	g_ctx.mouse.HandleMotion(x, y);
+	glutPostRedisplay();
 }
 
 void QuitProgram() { exit(0); }
@@ -59,7 +75,7 @@ int main(int argc, char **argv)
 	g_ctx.camera.SetFovSpeed(10.0);
 
 	/* 4-1. 모델 등록 */
-	g_ctx.display.AddModel(std::make_unique<Metahuman::Model>());
+	g_ctx.renderer.AddModel(std::make_unique<Metahuman::Model>());
 
 	/* 5. 입력 바인딩 */
 	g_ctx.input.BindKeyAction('a', [&]() { g_ctx.camera.Zoom(-0.5); });

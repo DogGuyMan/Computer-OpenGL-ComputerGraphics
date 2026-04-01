@@ -15,13 +15,11 @@ namespace Metahuman {
 	private :
 		int width;
 		int height;
-		std::vector<std::unique_ptr<Model>> models;
+		
 	public :
 		Display();
 		~Display();
 		void Reshape(int w, int h, Camera& camera);
-		void Render(Camera& camera);
-		void AddModel(std::unique_ptr<Model> model);
 		
 		int GetWidth() const;
 		int Getheight() const;
