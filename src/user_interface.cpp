@@ -44,19 +44,14 @@ void Metahuman::DummyTransform()
 	// ❌ glut 콜백은 우리가 직접 주입하는것이므로, 사용하지 말자! ❌ ImGui_ImplGLUT_InstallFuncs();
 }
 
-void Metahuman::UIUpdate()
+void Metahuman::UIUpdate(float* pos)
 {
 	ImGui_ImplOpenGL2_NewFrame();
 	ImGui_ImplGLUT_NewFrame();
 	ImGui::NewFrame();
-	ImGuiIO& io = ImGui::GetIO();
 	{
-		static float f = 0.0f;
-        	static int counter = 0;
-
-        	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::SliderFloat("float", &f, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::Begin("Transform");
+		ImGui::InputFloat3("Position", pos);
 		ImGui::End();
 	}
 	ImGui::Render();

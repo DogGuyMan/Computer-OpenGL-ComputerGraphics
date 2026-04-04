@@ -22,3 +22,9 @@ void Renderer::Render(Camera& camera)
 void Renderer::AddModel(std::unique_ptr<Model> model) {
 	models.push_back(std::move(model));
 }
+
+Model* Renderer::GetModel(size_t index) {
+	if (index < models.size())
+		return models[index].get();
+	return nullptr;
+}

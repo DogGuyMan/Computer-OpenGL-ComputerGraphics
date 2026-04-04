@@ -23,6 +23,7 @@ struct AppContext {
 };
 
 static AppContext g_ctx;
+static glm::fvec3 g_modelPos = glm::fvec3(0.0f);
 
 /* GLUT 콜백 — 자유 함수에서 g_ctx 인스턴스로 위임 */
 void HandleWindowReshapeEvent(int w, int h) { 
@@ -36,8 +37,12 @@ void HandleDisplayEvent() {
 	// 매 프레임 투영 갱신 (FOV 변경 반영)
 	g_ctx.camera.ApplyProjection((float)g_ctx.display.GetAspectRatio());
 	g_ctx.camera.ApplyView();
-	g_ctx.renderer.Render(g_ctx.camera); 
-	Metahuman::UIUpdate();
+	g_ctx.renderer.Render(g_ctx.camera);
+
+	// UI 입력값을 모델에 적용
+	Metahuman::UIUpdate(&g_modelPos.x);
+	if (auto* model = g_ctx.renderer.GetModel(0))
+		model->Translate(g_modelPos);
 
 	glutSwapBuffers();
 }

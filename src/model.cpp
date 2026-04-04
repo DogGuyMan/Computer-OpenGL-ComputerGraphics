@@ -35,17 +35,17 @@ void Model::Draw() {
 	glPopMatrix();
 }
 
-void Model::Translate(const glm::fvec3 &delta) {
-	modelTMatrix = glm::translate(modelTMatrix, delta);
+void Model::Translate(const glm::fvec3 &pos) {
+	modelTMatrix = glm::translate(glm::mat4(1.0f), pos);
 	dirtyFlag = true;
 }
 
 void Model::Rotate(float angleDeg, const glm::fvec3 &axis) {
-	modelRMatrix = glm::rotate(modelRMatrix, glm::radians(angleDeg), axis);
+	modelRMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angleDeg), axis);
 	dirtyFlag = true;
 }
 
 void Model::Scale(const glm::fvec3 &factor) {
-	modelSMatrix = glm::scale(modelSMatrix, factor);
+	modelSMatrix = glm::scale(glm::mat4(1.0f), factor);
 	dirtyFlag = true;
 }

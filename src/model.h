@@ -31,8 +31,8 @@ namespace Metahuman {
 
 		const glm::mat4& GetModelMatrix();
 
-		/* Transformable */
-		virtual void Translate(const glm::fvec3 &delta) override;
+		/* Transformable — 모두 절대값 설정 (누적 아님) */
+		virtual void Translate(const glm::fvec3 &pos) override;
 		virtual void Rotate(float angleDeg, const glm::fvec3 &axis) override;
 		virtual void Scale(const glm::fvec3 &factor) override;
 	};

@@ -15,7 +15,7 @@
 
 namespace Metahuman {
 	void DummyTransform();
-	void UIUpdate();
+	void UIUpdate(float* pos);
 	void UIReshape(int w, int h);
 	void UIMouse(int button, int state, int x, int y);
 	void UIMotion(int x, int y);

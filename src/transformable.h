@@ -12,7 +12,7 @@ namespace Metahuman
 		ITranslatable() = default;
 	public:
 		virtual ~ITranslatable() = default;
-		virtual void Translate(const glm::fvec3 &delta) = 0;
+		virtual void Translate(const glm::fvec3 &pos) = 0;
 		ITranslatable(const ITranslatable &) = delete;
 		ITranslatable operator=(const ITranslatable &) = delete;
 		ITranslatable(ITranslatable &&) = delete;
