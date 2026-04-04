@@ -15,7 +15,7 @@ void Tutorials::Chapter2::Callbacks::HandleWindowReshapeEvent(int w, int h)
 	// 윈도우 크기 변경 시 렌더링 영역 동기화 필수
 	glViewport(0, 0, w, h);
 
-	// 생략 하면 → 마지막으로 설정된 행렬 모드에 적용됨
+	// 생략 하면 -> 마지막으로 설정된 행렬 모드에 적용됨
 	// (기본값은 GL_MODELVIEW). 의도치 않게 modelview 행렬에 투영을 곱하게 될 수 있음
 	glMatrixMode(GL_PROJECTION);
     	gluPerspective(45.0,                  // FOV
@@ -38,7 +38,7 @@ void Tutorials::Chapter2::Callbacks::HandleDisplayEvent(void)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 
-	// 생략 하면 → 이전 프레임의 행렬 위에 계속 누적되어 화면이 점점 왜곡됨
+	// 생략 하면 -> 이전 프레임의 행렬 위에 계속 누적되어 화면이 점점 왜곡됨
 	glLoadIdentity();
 
 	gluPerspective(90.0, 1.0, 0.01, 100.0); // ! 원근 적용

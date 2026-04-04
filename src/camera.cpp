@@ -8,7 +8,7 @@
 
 using namespace Metahuman;
 
-// 도 → 라디안
+// 도 -> 라디안
 static double toRad(double deg) { return deg * 3.14159265358979 / 180.0; }
 
 Camera::Camera()

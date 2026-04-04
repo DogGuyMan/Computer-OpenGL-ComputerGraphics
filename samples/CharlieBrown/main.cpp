@@ -638,7 +638,7 @@ void drawGrassGround() {
 
     glColor3f(1.0f, 1.0f, 1.0f); // 텍스처 색상 왜곡 방지
 
-    float halfSize = 15.0f;    // 원래 5 → 15으로 3배 확장
+    float halfSize = 15.0f;    // 원래 5 -> 15으로 3배 확장
     float repeat = 15.0f;
 
     glBegin(GL_QUADS);

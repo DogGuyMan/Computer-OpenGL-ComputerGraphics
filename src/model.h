@@ -6,12 +6,35 @@
 #include <GL/freeglut.h>
 #endif
 
+#include "transformable.h"
+#include <glm/glm.hpp>
+
 namespace Metahuman {
-	class Model {
+	class Model : public ITransformable {
+	protected :
+		// TRS 분리 저장
+		glm::mat4 modelTMatrix = glm::mat4(1.0f);
+		glm::mat4 modelRMatrix = glm::mat4(1.0f);
+		glm::mat4 modelSMatrix = glm::mat4(1.0f);
+
+		// 최종 합성 행렬 (지연 평가)
+		glm::mat4 modelMatrix = glm::mat4(1.0f);
+		bool dirtyFlag = true;
+
+		// dirty일 때만 modelMatrix 재계산
+		void recalculateModelMatrix();
+
 	public :
 		Model();
 		~Model();
 		void Draw();
+
+		const glm::mat4& GetModelMatrix();
+
+		/* Transformable */
+		virtual void Translate(const glm::fvec3 &delta) override;
+		virtual void Rotate(float angleDeg, const glm::fvec3 &axis) override;
+		virtual void Scale(const glm::fvec3 &factor) override;
 	};
 };
 

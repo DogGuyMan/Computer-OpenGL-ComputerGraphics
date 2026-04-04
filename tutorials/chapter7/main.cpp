@@ -142,7 +142,7 @@ static void drawOutline(void)
 {
     /* Pass: render back-faces only, scaled up, in solid black */
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);          /* cull front → draw back faces */
+    glCullFace(GL_FRONT);          /* cull front -> draw back faces */
 
     glDisable(GL_TEXTURE_1D);
     glDisable(GL_LIGHTING);
