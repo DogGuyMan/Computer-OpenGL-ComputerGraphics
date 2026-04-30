@@ -1,5 +1,6 @@
 #ifndef __METAHUMAN_USER_INTERFACE_H__
 #define __METAHUMAN_USER_INTERFACE_H__
+#include "transformable.h"
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
@@ -15,7 +16,7 @@
 
 namespace Metahuman {
 	void DummyTransform();
-	void UIUpdate(float* pos);
+	void UITransformPanel(const char* label, Metahuman::PODTransform& form);
 	void UIReshape(int w, int h);
 	void UIMouse(int button, int state, int x, int y);
 	void UIMotion(int x, int y);

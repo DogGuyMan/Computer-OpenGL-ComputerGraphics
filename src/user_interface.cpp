@@ -1,4 +1,5 @@
 #include "user_interface.h"
+#include "glm/gtc/type_ptr.hpp"
 #include <imgui.h>
 #include <imgui_impl_glut.h>
 
@@ -44,14 +45,17 @@ void Metahuman::DummyTransform()
 	// ❌ glut 콜백은 우리가 직접 주입하는것이므로, 사용하지 말자! ❌ ImGui_ImplGLUT_InstallFuncs();
 }
 
-void Metahuman::UIUpdate(float* pos)
+void Metahuman::UITransformPanel(const char* label, Metahuman::PODTransform& form)
 {
 	ImGui_ImplOpenGL2_NewFrame();
 	ImGui_ImplGLUT_NewFrame();
 	ImGui::NewFrame();
 	{
 		ImGui::Begin("Transform");
-		ImGui::InputFloat3("Position", pos);
+		// ImGui::InputFloat3("Position", pos);
+		ImGui::DragFloat3("Position", glm::value_ptr(form.translate));
+		ImGui::DragFloat3("Rotate(deg)", glm::value_ptr(form.eulerDeg));
+		ImGui::DragFloat3("Scale", glm::value_ptr(form.scale));
 		ImGui::End();
 	}
 	ImGui::Render();

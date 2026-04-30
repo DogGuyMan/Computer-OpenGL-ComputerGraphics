@@ -33,8 +33,9 @@ namespace Metahuman {
 
 		/* Transformable — 모두 절대값 설정 (누적 아님) */
 		virtual void Translate(const glm::fvec3 &pos) override;
-		virtual void Rotate(float angleDeg, const glm::fvec3 &axis) override;
+		virtual void Rotate(const glm::fvec3 &eulerDeg) override;
 		virtual void Scale(const glm::fvec3 &factor) override;
+		void SetTransform(const Metahuman::PODTransform& t);
 	};
 };
 

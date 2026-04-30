@@ -5,6 +5,11 @@
 
 namespace Metahuman
 {
+	struct PODTransform {
+		glm::vec3 translate {0.0f, 0.0f, 0.0f};
+		glm::vec3 eulerDeg {0.0f, 0.0f, 0.0f}; // XYZ, DEG
+		glm::vec3 scale {1.0f, 1.0f,1.0f};
+	};
 
 	class ITranslatable
 	{
@@ -25,7 +30,7 @@ namespace Metahuman
 		IRotatable() = default;
 	public:
 		virtual ~IRotatable() = default;
-		virtual void Rotate(float angleDeg, const glm::fvec3 &axis) = 0;
+		virtual void Rotate(const glm::fvec3 &eulerDeg) = 0;
 		IRotatable(const IRotatable &) = delete;
 		IRotatable operator=(const IRotatable &) = delete;
 		IRotatable(IRotatable &&) = delete;

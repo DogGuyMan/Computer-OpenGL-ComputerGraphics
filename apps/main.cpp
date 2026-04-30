@@ -23,7 +23,7 @@ struct AppContext {
 };
 
 static AppContext g_ctx;
-static glm::fvec3 g_modelPos = glm::fvec3(0.0f);
+static Metahuman::PODTransform g_xform;   // g_modelPos 대체
 
 /* GLUT 콜백 — 자유 함수에서 g_ctx 인스턴스로 위임 */
 void HandleWindowReshapeEvent(int w, int h) { 
@@ -40,9 +40,9 @@ void HandleDisplayEvent() {
 	g_ctx.renderer.Render(g_ctx.camera);
 
 	// UI 입력값을 모델에 적용
-	Metahuman::UIUpdate(&g_modelPos.x);
+	Metahuman::UITransformPanel("Transform", g_xform);
 	if (auto* model = g_ctx.renderer.GetModel(0))
-		model->Translate(g_modelPos);
+		model->SetTransform(g_xform);
 
 	glutSwapBuffers();
 }
