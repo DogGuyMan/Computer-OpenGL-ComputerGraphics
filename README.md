@@ -1,6 +1,11 @@
 
 # 컴퓨터그래픽스및AI응용
 
+<div align=center>
+    <img src="image/2026-05-05-02-35-34.png" width="80%">
+    <h5></h5>
+</div>
+
 ---
 
 > ### 📄 사용한 툴

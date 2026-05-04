@@ -4,120 +4,158 @@
 #include <GL/freeglut.h>
 #endif
 
-#include "inputs.h"
+#include "constants.h"
 #include "camera.h"
 #include "display.h"
-#include "renderer.h"
+#include "inputs.h"
 #include "model.h"
+#include "model_imp.h"
+#include "renderer.h"
+#include "transformable.h"
 #include "user_interface.h"
-#include <memory>
-#include <spdlog/spdlog.h>
 #include <imgui.h>
+#include <memory>
 
-struct AppContext {
+namespace
+{
 	Metahuman::Camera camera;
 	Metahuman::Display display;
 	Metahuman::KeybaordInput input;
 	Metahuman::MouseInput mouse;
 	Metahuman::Renderer renderer;
-};
 
-static AppContext g_ctx;
-static Metahuman::PODTransform g_xform;   // g_modelPos 대체
+	struct AppConfig
+	{
+		int width = 800;
+		int height = 600;
+		const char *title = "Application";
+		float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+	};
 
-/* GLUT 콜백 — 자유 함수에서 g_ctx 인스턴스로 위임 */
-void HandleWindowReshapeEvent(int w, int h) { 
-	g_ctx.display.Reshape(w, h, g_ctx.camera); 
-	Metahuman::UIReshape(w, h);
-	glutPostRedisplay();
+	Metahuman::PODTransform g_xform;
+	Metahuman::UVTransform g_uv;
+	Metahuman::ResourceManagement g_rm = Metahuman::ResourceManagement();
+
+} // namespace
+
+void InitApplication(int &argc, char **argv, const AppConfig &cfg)
+{
+	glutInitWindowSize(cfg.width, cfg.height);
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutCreateWindow(cfg.title);
+
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(cfg.clearColor[0], cfg.clearColor[1],
+	             cfg.clearColor[2], cfg.clearColor[3]);
+	Metahuman::InitImgui();
 }
 
-void HandleDisplayEvent() { 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// 매 프레임 투영 갱신 (FOV 변경 반영)
-	g_ctx.camera.ApplyProjection((float)g_ctx.display.GetAspectRatio());
-	g_ctx.camera.ApplyView();
-	g_ctx.renderer.Render(g_ctx.camera);
-
-	// UI 입력값을 모델에 적용
-	Metahuman::UITransformPanel("Transform", g_xform);
-	if (auto* model = g_ctx.renderer.GetModel(0))
-		model->SetTransform(g_xform);
-
-	glutSwapBuffers();
+void QuitApplication()
+{
+	exit(0);
 }
 
-void HandleKeyboardInput(unsigned char key, int x, int y) {
-	Metahuman::UIKeyboardInput(key, x, y);
-	ImGuiIO& io = ImGui::GetIO();
-	if (!io.WantCaptureKeyboard)
-		g_ctx.input.Dispatch(key);
-	glutPostRedisplay();
-}
-
-void HandleMouse(int button, int state, int x, int y) {
-	Metahuman::UIMouse(button, state, x, y);
-	ImGuiIO& io = ImGui::GetIO();
-	if (!io.WantCaptureMouse)
-		g_ctx.mouse.HandleMouse(button, state, x, y);
-	glutPostRedisplay();
-}
-
-void HandleMotion(int x, int y) {
-	Metahuman::UIMotion(x, y);
-	ImGuiIO& io = ImGui::GetIO();
-	if (!io.WantCaptureMouse)
-		g_ctx.mouse.HandleMotion(x, y);
-	glutPostRedisplay();
-}
-
-void QuitProgram() { exit(0); }
+void HandleWindowReshapeEvent(int, int);
+void HandleDisplayEvent();
+void HandleKeyboardInput(unsigned char, int , int );
+void HandleMouse(int, int, int , int );
+void HandleMotion(int, int );
 
 int main(int argc, char **argv)
 {
-	/* 1. GLUT 초기화 */
-	glutInitWindowSize(800, 600);
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	/* 1. Application = GLUT/GL 부트스트랩 + 메인 루프 */
+	InitApplication(argc, argv, {800, 600, "Example"});
 
-	/* 2. 윈도우 생성 */
-	int window = glutCreateWindow("Example");
+	/* 2. 데모 데이터 설정 */
+	display.SetWidth(800);
+	display.Setheight(600);
+	camera.SetFovSpeed(10.0);
 
-	/* 3. OpenGL 설정 */
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glEnable(GL_DEPTH_TEST);
+	/* 2-1. 모델 등록 */
+	auto keroroTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_FACE);
+	renderer.AddModel(std::make_unique<Metahuman::TexturedSphere>(keroroTexture));
 
-	/* 4. Context 설정 */
-	g_ctx.display.SetWidth(800);
-	g_ctx.display.Setheight(600);
-	g_ctx.camera.SetFovSpeed(10.0);
-
-	/* 4-1. 모델 등록 */
-	g_ctx.renderer.AddModel(std::make_unique<Metahuman::Model>());
-
-	/* 5. 입력 바인딩 */
-	g_ctx.input.BindKeyAction('a', [&]() { g_ctx.camera.Zoom(-0.5); });
-	g_ctx.input.BindKeyAction('z', [&]() { g_ctx.camera.Zoom(0.5); });
-	g_ctx.input.BindKeyAction('q', QuitProgram);
-	g_ctx.input.BindKeyAction(27, QuitProgram);
+	/* 3. 입력 바인딩 (정책) */
+	input.BindKeyAction('a', [] { camera.Zoom(-0.5); });
+	input.BindKeyAction('z', [] { camera.Zoom(0.5); });
+	input.BindKeyAction('q', QuitApplication);
+	input.BindKeyAction(27, QuitApplication);
 
 	// 마우스 드래그 -> Camera Orbit 회전
-	g_ctx.mouse.BindDragAction([&](int dx, int dy) {
+	mouse.BindDragAction([](int dx, int dy) {
 		// yaw (수평 회전), pitch (수직 회전)
-		g_ctx.camera.Rotate(-dy * 0.5, dx * 0.5, 0);
+		camera.Rotate(-dy * 0.5, dx * 0.5, 0);
 	});
-	
-	/* 6. GLUT 콜백 등록 */
+
+	/* 4. GLUT 콜백 등록 */
 	glutReshapeFunc(HandleWindowReshapeEvent);
 	glutDisplayFunc(HandleDisplayEvent);
 	glutKeyboardFunc(HandleKeyboardInput);
 	glutMouseFunc(HandleMouse);
 	glutMotionFunc(HandleMotion);
-	
-	Metahuman::DummyTransform();
 
-	/* 7. 메인 루프 */
+	/* 5. ImGui 컨텍스트 초기화 */
+
+	/* 6. 메인 루프 진입 */
 	glutMainLoop();
-
 	return 0;
+}
+
+/* GLUT 콜백 — 자유 함수에서 g_ctx 인스턴스로 위임 */
+void HandleWindowReshapeEvent(int w, int h)
+{
+	display.Reshape(w, h, camera);
+	Metahuman::UIReshape(w, h);
+	glutPostRedisplay();
+}
+
+void HandleDisplayEvent()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// 매 프레임 투영 갱신 (FOV 변경 반영)
+	camera.ApplyProjection((float)display.GetAspectRatio());
+	camera.ApplyView();
+	renderer.Render(camera);
+
+	// UI 한 프레임: Begin -> 패널들 -> End
+	Metahuman::UIBeginFrame();
+	Metahuman::UITransformPanel("Transform", g_xform);
+	Metahuman::UIUVPanel("UV", g_uv);
+	Metahuman::UIEndFrame();
+
+	// UI 입력값을 모델에 적용
+	if (auto *model = renderer.GetModel(0)) {
+		model->SetTransform(g_xform);
+		// TexturedSphere일 때만 UV 적용. 추후 모델이 늘어나면 picking으로 선택 모델 결정.
+		if (auto *sphere = dynamic_cast<Metahuman::TexturedSphere *>(model))
+			sphere->SetUV(g_uv);
+	}
+
+	glutSwapBuffers();
+}
+
+void HandleKeyboardInput(unsigned char key, int x, int y)
+{
+	Metahuman::UIKeyboardInput(key, x, y);
+	if (!ImGui::GetIO().WantCaptureKeyboard)
+		input.Dispatch(key);
+	glutPostRedisplay();
+}
+
+void HandleMouse(int button, int state, int x, int y)
+{
+	Metahuman::UIMouse(button, state, x, y);
+	if (!ImGui::GetIO().WantCaptureMouse)
+		mouse.HandleMouse(button, state, x, y);
+	glutPostRedisplay();
+}
+
+void HandleMotion(int x, int y)
+{
+	Metahuman::UIMotion(x, y);
+	if (!ImGui::GetIO().WantCaptureMouse)
+		mouse.HandleMotion(x, y);
+	glutPostRedisplay();
 }

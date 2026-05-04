@@ -159,3 +159,4 @@ ipch/
 # freeglut 유지
 !extern/**
 !extern/freeglut/bin/**
+godot_engine_reference

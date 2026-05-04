@@ -35,7 +35,14 @@ FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog.git 
 FetchContent_Declare(stb    GIT_REPOSITORY https://github.com/nothings/stb.git  GIT_TAG master  GIT_SHALLOW TRUE)
 FetchContent_Declare(imgui     GIT_REPOSITORY https://github.com/ocornut/imgui.git     GIT_TAG docking GIT_SHALLOW TRUE)
 FetchContent_Declare(imguizmo  GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git GIT_TAG master GIT_SHALLOW TRUE)
-FetchContent_MakeAvailable(glm spdlog stb imgui imguizmo)
+FetchContent_MakeAvailable(glm spdlog stb imgui)
+
+# imguizmo: 업스트림이 자체 CMakeLists.txt 를 추가했지만, 본 프로젝트는 imgui 와 동일한 수동 빌드 방식을 유지한다.
+# add_subdirectory 호출(=중복 imguizmo 타겟 생성)을 피하기 위해 Populate 만 수행한다.
+FetchContent_GetProperties(imguizmo)
+if(NOT imguizmo_POPULATED)
+    FetchContent_Populate(imguizmo)
+endif()
 
 add_library(stb INTERFACE)
 target_include_directories(stb SYSTEM INTERFACE ${stb_SOURCE_DIR})
@@ -62,15 +69,16 @@ if(APPLE)
     target_compile_options(imgui PRIVATE -Wno-macro-redefined)
 endif()
 
-# imguizmo (CMakeLists.txt 없음 — imgui와 동일 방식으로 수동 빌드)
+# imguizmo (업스트림 CMakeLists 무시, imgui 와 동일 방식으로 수동 빌드)
 add_library(imguizmo STATIC
-    ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp
-    ${imguizmo_SOURCE_DIR}/ImCurveEdit.cpp
-    ${imguizmo_SOURCE_DIR}/ImGradient.cpp
-    ${imguizmo_SOURCE_DIR}/ImSequencer.cpp
-    ${imguizmo_SOURCE_DIR}/GraphEditor.cpp
+    ${imguizmo_SOURCE_DIR}/src/ImGuizmo.cpp
+    ${imguizmo_SOURCE_DIR}/src/ImCurveEdit.cpp
+    ${imguizmo_SOURCE_DIR}/src/ImGradient.cpp
+    ${imguizmo_SOURCE_DIR}/src/ImSequencer.cpp
+    ${imguizmo_SOURCE_DIR}/src/GraphEditor.cpp
+    ${imguizmo_SOURCE_DIR}/src/ImVectorEditor.cpp
 )
-target_include_directories(imguizmo SYSTEM PUBLIC ${imguizmo_SOURCE_DIR})
+target_include_directories(imguizmo SYSTEM PUBLIC ${imguizmo_SOURCE_DIR}/src)
 target_link_libraries(imguizmo PUBLIC imgui)
 
 # ====== 프로젝트 의존성 통합 타겟 ======

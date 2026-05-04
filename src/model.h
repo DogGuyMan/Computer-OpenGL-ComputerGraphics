@@ -26,15 +26,15 @@ namespace Metahuman {
 
 	public :
 		Model();
-		~Model();
-		void Draw();
+		virtual ~Model();
+		virtual void Draw();
 
 		const glm::mat4& GetModelMatrix();
 
 		/* Transformable — 모두 절대값 설정 (누적 아님) */
-		virtual void Translate(const glm::fvec3 &pos) override;
-		virtual void Rotate(const glm::fvec3 &eulerDeg) override;
-		virtual void Scale(const glm::fvec3 &factor) override;
+		void Translate(const glm::fvec3 &pos) override;
+		void Rotate(const glm::fvec3 &eulerDeg) override;
+		void Scale(const glm::fvec3 &factor) override;
 		void SetTransform(const Metahuman::PODTransform& t);
 	};
 };

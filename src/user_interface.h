@@ -15,8 +15,17 @@
 #endif
 
 namespace Metahuman {
-	void DummyTransform();
+	void InitImgui();
+
+	// 한 프레임 단위 UI begin/end. 사이에 패널들을 호출한다.
+	// 패널을 2개 이상 그릴 때 NewFrame이 한 프레임에 두 번 불리지 않도록 분리됨.
+	void UIBeginFrame();
+	void UIEndFrame();
+
+	// 패널들 (UIBeginFrame ~ UIEndFrame 사이에서 호출)
 	void UITransformPanel(const char* label, Metahuman::PODTransform& form);
+	void UIUVPanel(const char* label, Metahuman::UVTransform& uv);
+
 	void UIReshape(int w, int h);
 	void UIMouse(int button, int state, int x, int y);
 	void UIMotion(int x, int y);

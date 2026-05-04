@@ -11,6 +11,15 @@ namespace Metahuman
 		glm::vec3 scale {1.0f, 1.0f,1.0f};
 	};
 
+	// 텍스처 좌표 변환 (per-instance 상태)
+	// quadric/mesh가 자동 생성한 (s,t) UV에 GL_TEXTURE 매트릭스로 곱해진다.
+	// Material 모듈 도입 전까지는 텍스처를 쓰는 모델 자식 클래스가 직접 보유.
+	struct UVTransform {
+		glm::vec2 offset {0.0f, 0.0f};
+		glm::vec2 scale  {1.0f, 1.0f};
+		float rotationDeg = 0.0f;
+	};
+
 	class ITranslatable
 	{
 	protected:

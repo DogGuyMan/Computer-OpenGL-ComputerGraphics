@@ -384,7 +384,7 @@ void drawCharlieBody() {
 
 void drawPants() {
     GLUquadric* quad = gluNewQuadric();
-    gluQuadricDrawStyle(quad, GLU_FILL); // ← 꼭 추가!
+    gluQuadricDrawStyle(quad, GLU_FILL); // <- 꼭 추가!
 
     // 왼쪽 다리
     glPushMatrix();
