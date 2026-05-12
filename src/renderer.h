@@ -6,6 +6,7 @@
 #include <GL/freeglut.h>
 #endif
 
+#include <memory>
 #include <vector>
 #include "camera.h"
 #include "model.h"

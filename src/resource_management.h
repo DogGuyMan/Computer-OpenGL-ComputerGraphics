@@ -10,6 +10,11 @@
 #include <GL/freeglut.h>
 #endif
 
+// Windows의 <GL/gl.h>는 OpenGL 1.1까지만 제공 — 1.2부터 코어인 상수 보강
+#ifndef GL_CLAMP_TO_EDGE
+#define GL_CLAMP_TO_EDGE 0x812F
+#endif
+
 namespace Metahuman
 {
 	class Texture
