@@ -22,8 +22,6 @@ namespace Metahuman
 	 *********************************************************************************/
 	Texture::Texture(const std::string &path, GLint internal_format, GLuint format)
 	{
-		stbi_set_flip_vertically_on_load(true);
-
 		unsigned char *image = stbi_load(path.c_str(), &width, &height, &channels, 0);
 		if (!image)
 		{

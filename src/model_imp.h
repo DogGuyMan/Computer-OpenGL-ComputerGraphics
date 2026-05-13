@@ -24,7 +24,7 @@ namespace Metahuman
 	// * Texture GL 핸들 소유권은 ResourceManagement에 있음 (여긴 borrowed pointer)
 	// * quadric은 인스턴스마다 하나씩 보유 (소멸 시 gluDeleteQuadric)
 	// * UV transform은 per-instance 상태 — Material 모듈 도입 전까지 여기서 보유
-	class KeroroHead : public Model, IUVTransformable
+	class KeroroHead : public Model, public IUVTransformable
 	{
 	  private:
 		GLUquadric *quadric = nullptr;
@@ -107,7 +107,7 @@ namespace Metahuman
 		}
 	};
 
-	class KeroroBody : public ParametricGeometry, IUVTransformable
+	class KeroroBody : public ParametricGeometry, public IUVTransformable
 	{
 	  private:
 		Texture *texture = nullptr;

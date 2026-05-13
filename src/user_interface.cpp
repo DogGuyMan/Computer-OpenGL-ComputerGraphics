@@ -88,7 +88,7 @@ void Metahuman::UITransformPanel(const char* label, Metahuman::PODTransform& for
 	}
 
 	ImGui::DragFloat3("Position", glm::value_ptr(form.translate), 0.05f);
-	ImGui::DragFloat3("Rotate(deg)", glm::value_ptr(form.eulerDeg), 0.05f);
+	ImGui::DragFloat3("Rotate(deg)", glm::value_ptr(form.eulerDeg), 1.0f);
 	ImGui::DragFloat3("Scale", glm::value_ptr(form.scale), 0.05f);
 	ImGui::End();
 }
@@ -98,7 +98,7 @@ void Metahuman::UIUVPanel(const char* label, Metahuman::UVTransform& uv)
 	ImGui::Begin(label);
 	ImGui::DragFloat2("UV Offset", glm::value_ptr(uv.offset), 0.05f);
 	ImGui::DragFloat2("UV Scale",  glm::value_ptr(uv.scale),  0.05f);
-	ImGui::DragFloat ("UV Rotate(deg)", &uv.rotationDeg, 0.05f);
+	ImGui::DragFloat ("UV Rotate(deg)", &uv.rotationDeg, 1.0f);
 	ImGui::End();
 }
 

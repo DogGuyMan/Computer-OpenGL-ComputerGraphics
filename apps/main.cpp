@@ -15,6 +15,7 @@
 #include "user_interface.h"
 #include <imgui.h>
 #include <memory>
+#include <vector>
 
 namespace
 {
@@ -32,8 +33,8 @@ namespace
 		float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 	};
 
-	Metahuman::PODTransform g_xform;
-	Metahuman::UVTransform g_uv;
+	std::vector<std::unique_ptr<Metahuman::PODTransform>> g_xforms;
+	std::vector<std::unique_ptr<Metahuman::UVTransform>>  g_uvs;
 	Metahuman::ResourceManagement g_rm = Metahuman::ResourceManagement();
 	int g_selectedModelIndex = 0;
 
@@ -80,6 +81,15 @@ int main(int argc, char **argv)
 	renderer.AddModel(std::make_unique<Metahuman::KeroroHead>(keroroFaceTexture));
 	renderer.AddModel(std::make_unique<Metahuman::KeroroBody>(keroroBodyTexture));
 
+	/* 2-2. per-instance Transform/UV 상태 초기화 (모델 인덱스와 1:1 매핑) */
+	const size_t modelCount = renderer.GetModelCount();
+	g_xforms.reserve(modelCount);
+	g_uvs.reserve(modelCount);
+	for (size_t i = 0; i < modelCount; ++i) {
+		g_xforms.emplace_back(std::make_unique<Metahuman::PODTransform>());
+		g_uvs.emplace_back(std::make_unique<Metahuman::UVTransform>());
+	}
+
 	/* 3. 입력 바인딩 (정책) */
 	input.BindKeyAction('a', [] { camera.Zoom(-0.5); });
 	input.BindKeyAction('z', [] { camera.Zoom(0.5); });
@@ -123,18 +133,27 @@ void HandleDisplayEvent()
 	renderer.Render(camera);
 
 	// UI 한 프레임: Begin -> 패널들 -> End
-	Metahuman::UIBeginFrame();
-	Metahuman::UITransformPanel("Transform", g_xform,
-	                            g_selectedModelIndex,
-	                            (int)renderer.GetModelCount());
-	Metahuman::UIUVPanel("UV", g_uv);
-	Metahuman::UIEndFrame();
+	const int modelCount = (int)renderer.GetModelCount();
+	if (modelCount > 0) {
+		if (g_selectedModelIndex < 0) g_selectedModelIndex = 0;
+		if (g_selectedModelIndex >= modelCount) g_selectedModelIndex = modelCount - 1;
 
-	// UI 입력값을 선택된 모델에 적용
-	if (auto *model = renderer.GetModel((size_t)g_selectedModelIndex)) {
-		model->SetTransform(g_xform);
-		if (auto *uvTransform = dynamic_cast<Metahuman::IUVTransformable *>(model))
-			uvTransform->SetUV(g_uv);
+		auto& xform = *g_xforms[(size_t)g_selectedModelIndex];
+		auto& uv    = *g_uvs   [(size_t)g_selectedModelIndex];
+
+		Metahuman::UIBeginFrame();
+		Metahuman::UITransformPanel("Transform", xform,
+		                            g_selectedModelIndex,
+		                            modelCount);
+		Metahuman::UIUVPanel("UV", uv);
+		Metahuman::UIEndFrame();
+
+		// 선택된 모델에 해당 슬롯의 상태를 적용
+		if (auto *model = renderer.GetModel((size_t)g_selectedModelIndex)) {
+			model->SetTransform(xform);
+			if (auto *uvTransform = dynamic_cast<Metahuman::IUVTransformable *>(model))
+				uvTransform->SetUV(uv);
+		}
 	}
 
 	glutSwapBuffers();

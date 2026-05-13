@@ -34,6 +34,7 @@ int loadGLTextures(void);
 // ====== stb_image로 BMP 로딩 + 텍스처 생성 ======
 static int loadTexture(const char *filename, GLuint tex)
 {
+	stbi_set_flip_vertically_on_load(true);
 	int w, h, channels;
 	unsigned char *data = stbi_load(filename, &w, &h, &channels, 3);
 	if (!data) {
