@@ -21,6 +21,7 @@ namespace Metahuman {
 		void Render(Camera& camera);
 		void AddModel(std::unique_ptr<Model> model);
 		Model* GetModel(size_t index);
+		size_t GetModelCount() const;
 	};
 };
 

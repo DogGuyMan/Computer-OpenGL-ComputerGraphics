@@ -28,3 +28,7 @@ Model* Renderer::GetModel(size_t index) {
 		return models[index].get();
 	return nullptr;
 }
+
+size_t Renderer::GetModelCount() const {
+	return models.size();
+}

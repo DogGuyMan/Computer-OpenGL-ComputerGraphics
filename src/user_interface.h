@@ -23,7 +23,9 @@ namespace Metahuman {
 	void UIEndFrame();
 
 	// 패널들 (UIBeginFrame ~ UIEndFrame 사이에서 호출)
-	void UITransformPanel(const char* label, Metahuman::PODTransform& form);
+	// modelIndex/modelCount: Transform 패널 상단 Combo로 조작 대상 모델을 선택. modelIndex는 in/out.
+	void UITransformPanel(const char* label, Metahuman::PODTransform& form,
+	                      int& modelIndex, int modelCount);
 	void UIUVPanel(const char* label, Metahuman::UVTransform& uv);
 
 	void UIReshape(int w, int h);

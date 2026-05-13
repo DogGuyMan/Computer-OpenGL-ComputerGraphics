@@ -1,5 +1,6 @@
 #include "user_interface.h"
 #include "glm/gtc/type_ptr.hpp"
+#include <cstdio>
 #include <imgui.h>
 #include <imgui_impl_glut.h>
 
@@ -11,9 +12,11 @@ void Metahuman::InitImgui()
 	// 	ImGui의 "뇌"를 만드는 것
 	// 만약 없다면 	모든 ImGui 호출이 nullptr 접근 -> 크래시
 	ImGui::CreateContext();
-	
-	// ImGuiIO &io = ImGui::GetIO();
-	// (void)io;
+
+	ImGuiIO &io = ImGui::GetIO();
+	// 드래그 위젯(DragFloat 등)에서 클릭만(드래그X)으로 InputText 모드 진입.
+	// Ctrl+Click 동작은 그대로 유지됨.
+	io.ConfigDragClickToInputText = true;
 	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; 키보드 조작 활성화
 
 	// ImGui 스타일 설정
@@ -58,21 +61,44 @@ void Metahuman::UIEndFrame()
 	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Metahuman::UITransformPanel(const char* label, Metahuman::PODTransform& form)
+void Metahuman::UITransformPanel(const char* label, Metahuman::PODTransform& form,
+                                 int& modelIndex, int modelCount)
 {
 	ImGui::Begin(label);
-	ImGui::DragFloat3("Position", glm::value_ptr(form.translate));
-	ImGui::DragFloat3("Rotate(deg)", glm::value_ptr(form.eulerDeg));
-	ImGui::DragFloat3("Scale", glm::value_ptr(form.scale));
+
+	if (modelCount > 0) {
+		if (modelIndex < 0) modelIndex = 0;
+		if (modelIndex >= modelCount) modelIndex = modelCount - 1;
+
+		char preview[32];
+		std::snprintf(preview, sizeof(preview), "Model %d", modelIndex);
+		if (ImGui::BeginCombo("Target Model", preview)) {
+			for (int i = 0; i < modelCount; ++i) {
+				char item[32];
+				std::snprintf(item, sizeof(item), "Model %d", i);
+				const bool selected = (i == modelIndex);
+				if (ImGui::Selectable(item, selected))
+					modelIndex = i;
+				if (selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::Separator();
+	}
+
+	ImGui::DragFloat3("Position", glm::value_ptr(form.translate), 0.05f);
+	ImGui::DragFloat3("Rotate(deg)", glm::value_ptr(form.eulerDeg), 0.05f);
+	ImGui::DragFloat3("Scale", glm::value_ptr(form.scale), 0.05f);
 	ImGui::End();
 }
 
 void Metahuman::UIUVPanel(const char* label, Metahuman::UVTransform& uv)
 {
 	ImGui::Begin(label);
-	ImGui::DragFloat2("UV Offset", glm::value_ptr(uv.offset), 0.01f);
-	ImGui::DragFloat2("UV Scale",  glm::value_ptr(uv.scale),  0.01f);
-	ImGui::DragFloat ("UV Rotate(deg)", &uv.rotationDeg);
+	ImGui::DragFloat2("UV Offset", glm::value_ptr(uv.offset), 0.05f);
+	ImGui::DragFloat2("UV Scale",  glm::value_ptr(uv.scale),  0.05f);
+	ImGui::DragFloat ("UV Rotate(deg)", &uv.rotationDeg, 0.05f);
 	ImGui::End();
 }
 

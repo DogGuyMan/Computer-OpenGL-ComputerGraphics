@@ -30,3 +30,5 @@ BUILD_DIR="$ROOT_DIR/build_ninja"
 if [ -f "$BUILD_DIR/compile_commands.json" ]; then
     ln -sf "$BUILD_DIR/compile_commands.json" "$ROOT_DIR/compile_commands.json"
 fi
+
+# cmake --preset ninja -DVCPKG_MANIFEST_INSTALL=OFF

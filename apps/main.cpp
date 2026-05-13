@@ -35,6 +35,7 @@ namespace
 	Metahuman::PODTransform g_xform;
 	Metahuman::UVTransform g_uv;
 	Metahuman::ResourceManagement g_rm = Metahuman::ResourceManagement();
+	int g_selectedModelIndex = 0;
 
 } // namespace
 
@@ -74,8 +75,10 @@ int main(int argc, char **argv)
 	camera.SetFovSpeed(10.0);
 
 	/* 2-1. 모델 등록 */
-	auto keroroTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_FACE);
-	renderer.AddModel(std::make_unique<Metahuman::TexturedSphere>(keroroTexture));
+	auto keroroFaceTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_FACE);
+	auto keroroBodyTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_BODY);
+	renderer.AddModel(std::make_unique<Metahuman::KeroroHead>(keroroFaceTexture));
+	renderer.AddModel(std::make_unique<Metahuman::KeroroBody>(keroroBodyTexture));
 
 	/* 3. 입력 바인딩 (정책) */
 	input.BindKeyAction('a', [] { camera.Zoom(-0.5); });
@@ -121,16 +124,17 @@ void HandleDisplayEvent()
 
 	// UI 한 프레임: Begin -> 패널들 -> End
 	Metahuman::UIBeginFrame();
-	Metahuman::UITransformPanel("Transform", g_xform);
+	Metahuman::UITransformPanel("Transform", g_xform,
+	                            g_selectedModelIndex,
+	                            (int)renderer.GetModelCount());
 	Metahuman::UIUVPanel("UV", g_uv);
 	Metahuman::UIEndFrame();
 
-	// UI 입력값을 모델에 적용
-	if (auto *model = renderer.GetModel(0)) {
+	// UI 입력값을 선택된 모델에 적용
+	if (auto *model = renderer.GetModel((size_t)g_selectedModelIndex)) {
 		model->SetTransform(g_xform);
-		// TexturedSphere일 때만 UV 적용. 추후 모델이 늘어나면 picking으로 선택 모델 결정.
-		if (auto *sphere = dynamic_cast<Metahuman::TexturedSphere *>(model))
-			sphere->SetUV(g_uv);
+		if (auto *uvTransform = dynamic_cast<Metahuman::IUVTransformable *>(model))
+			uvTransform->SetUV(g_uv);
 	}
 
 	glutSwapBuffers();
