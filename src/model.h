@@ -8,10 +8,14 @@
 
 #include "transformable.h"
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <vector>
 
-namespace Metahuman {
-	class Model : public ITransformable {
-	protected :
+namespace Metahuman
+{
+	class Model : public ITransformable
+	{
+	  protected:
 		// TRS 분리 저장
 		glm::mat4 modelTMatrix = glm::mat4(1.0f);
 		glm::mat4 modelRMatrix = glm::mat4(1.0f);
@@ -24,19 +28,48 @@ namespace Metahuman {
 		// dirty일 때만 modelMatrix 재계산
 		void recalculateModelMatrix();
 
-	public :
+	  public:
 		Model();
 		virtual ~Model();
 		virtual void Draw();
 
-		const glm::mat4& GetModelMatrix();
+		const glm::mat4 &GetModelMatrix();
 
 		/* Transformable — 모두 절대값 설정 (누적 아님) */
 		void Translate(const glm::fvec3 &pos) override;
 		void Rotate(const glm::fvec3 &eulerDeg) override;
 		void Scale(const glm::fvec3 &factor) override;
-		void SetTransform(const Metahuman::PODTransform& t);
+		void SetTransform(const Metahuman::PODTransform &t);
 	};
-};
 
-#endif//__METAHUMAN_MODEL_H__
+	class ParametricGeometry : public Model
+	{
+	  protected:
+		double uStart, uEnd;
+		double vStart, vEnd;
+		size_t uRes, vRes;
+
+		// (uRes+1) × (vRes+1) 격자 캐시. build()에서 한 번 채우고 매 프레임 재사용
+		std::vector<glm::vec4> vertices;
+		std::vector<glm::vec3> normals;
+		std::vector<glm::vec2> texCoords;
+
+		// 격자를 SurfaceFunction으로 샘플링하여 정점/노멀/UV 캐시 생성.
+		// 노멀은 finite difference로 계산 (퇴화 시 (0,1,0) fallback).
+		void build();
+
+		// 도형별 매개변수 곡면 함수. (u, v) → (x, y, z, 1)
+		virtual glm::vec4 SurfaceFunction(double u, double v) const = 0;
+
+	  public:
+		ParametricGeometry(double u_start, double u_end, size_t u_res,
+		                   double v_start, double v_end, size_t v_res);
+		~ParametricGeometry() override = default;
+
+		// TRS 적용 후 GL_QUAD_STRIP으로 격자 렌더
+		void Draw() override;
+	}; // namespace Metahuman
+
+} // namespace Metahuman
+
+#endif //__METAHUMAN_MODEL_H__

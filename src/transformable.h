@@ -5,26 +5,44 @@
 
 namespace Metahuman
 {
-	struct PODTransform {
-		glm::vec3 translate {0.0f, 0.0f, 0.0f};
-		glm::vec3 eulerDeg {0.0f, 0.0f, 0.0f}; // XYZ, DEG
-		glm::vec3 scale {1.0f, 1.0f,1.0f};
+	struct PODTransform
+	{
+		glm::vec3 translate{0.0f, 0.0f, 0.0f};
+		glm::vec3 eulerDeg{0.0f, 0.0f, 0.0f}; // XYZ, DEG
+		glm::vec3 scale{1.0f, 1.0f, 1.0f};
 	};
 
 	// 텍스처 좌표 변환 (per-instance 상태)
 	// quadric/mesh가 자동 생성한 (s,t) UV에 GL_TEXTURE 매트릭스로 곱해진다.
 	// Material 모듈 도입 전까지는 텍스처를 쓰는 모델 자식 클래스가 직접 보유.
-	struct UVTransform {
-		glm::vec2 offset {0.0f, 0.0f};
-		glm::vec2 scale  {1.0f, 1.0f};
+	struct UVTransform
+	{
+		glm::vec2 offset{0.0f, 0.0f};
+		glm::vec2 scale{1.0f, 1.0f};
 		float rotationDeg = 0.0f;
+	};
+
+	class IUVTransformable
+	{
+	  protected:
+		IUVTransformable() = default;
+
+	  public:
+		virtual ~IUVTransformable() = default;
+		virtual void SetUV(const UVTransform &t) = 0;
+		virtual const UVTransform &GetUV() const = 0;
+		IUVTransformable(const IUVTransformable &) = delete;
+		IUVTransformable operator=(const IUVTransformable &) = delete;
+		IUVTransformable(IUVTransformable &&) = delete;
+		IUVTransformable operator=(IUVTransformable &) = delete;
 	};
 
 	class ITranslatable
 	{
-	protected:
+	  protected:
 		ITranslatable() = default;
-	public:
+
+	  public:
 		virtual ~ITranslatable() = default;
 		virtual void Translate(const glm::fvec3 &pos) = 0;
 		ITranslatable(const ITranslatable &) = delete;
@@ -35,9 +53,10 @@ namespace Metahuman
 
 	class IRotatable
 	{
-	protected:
+	  protected:
 		IRotatable() = default;
-	public:
+
+	  public:
 		virtual ~IRotatable() = default;
 		virtual void Rotate(const glm::fvec3 &eulerDeg) = 0;
 		IRotatable(const IRotatable &) = delete;
@@ -48,9 +67,10 @@ namespace Metahuman
 
 	class IScaleable
 	{
-	protected:
+	  protected:
 		IScaleable() = default;
-	public:
+
+	  public:
 		virtual ~IScaleable() = default;
 		virtual void Scale(const glm::fvec3 &factor) = 0;
 		IScaleable(const IScaleable &) = delete;
@@ -61,14 +81,15 @@ namespace Metahuman
 
 	class ITransformable : public ITranslatable, IRotatable, IScaleable
 	{
-	protected:
+	  protected:
 		ITransformable() = default;
-	public:
+
+	  public:
 		virtual ~ITransformable() = default;
 		ITransformable(const ITransformable &) = delete;
 		ITransformable operator=(const ITransformable &) = delete;
 		ITransformable(ITransformable &&) = delete;
 		ITransformable operator=(ITransformable &) = delete;
 	};
-}
+} // namespace Metahuman
 #endif //__METAHUMAN_INTERFACES_H__
