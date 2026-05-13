@@ -2,8 +2,12 @@
 # 컴퓨터그래픽스및AI응용
 
 <div align=center>
-    <img src="image/2026-05-05-02-35-34.png" width="80%">
-    <h5></h5>
+    <img src="image/스크린샷 2026-05-13 22.02.59.png" width="80%">
+    <h5>머리</h5>
+    <img src="image/스크린샷 2026-05-13 22.03.04.png" width="80%">
+    <h5>몸통</h5>
+    <img src="image/스크린샷 2026-05-13 22.03.08.png" width="80%">
+    <h5>모자 (쌍곡면)</h5>
 </div>
 
 ---
