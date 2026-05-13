@@ -49,6 +49,11 @@ void InitApplication(int &argc, char **argv, const AppConfig &cfg)
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
+	// 알파 채널이 있는 텍스처(PNG RGBA)를 투명하게 합성하기 위한 표준 블렌딩.
+	// 주의: 깊이 테스트와 함께 쓸 때, 반투명 모델은 불투명 모델보다 뒤에(나중에) 그려야
+	//      뒤쪽 색이 이미 프레임버퍼에 있어 정상 합성된다. 모델 등록 순서가 곧 draw 순서.
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glClearColor(cfg.clearColor[0], cfg.clearColor[1],
 	             cfg.clearColor[2], cfg.clearColor[3]);
 	Metahuman::InitImgui();
@@ -75,11 +80,13 @@ int main(int argc, char **argv)
 	display.Setheight(600);
 	camera.SetFovSpeed(10.0);
 
-	/* 2-1. 모델 등록 */
+	/* 2-1. 모델 등록 — KeroroHat은 알파 PNG이므로 불투명 모델(head/body) 뒤에 등록(=마지막 draw) */
 	auto keroroFaceTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_FACE);
 	auto keroroBodyTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_BODY);
+	auto keroroHatTexture  = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_HAT);
 	renderer.AddModel(std::make_unique<Metahuman::KeroroHead>(keroroFaceTexture));
 	renderer.AddModel(std::make_unique<Metahuman::KeroroBody>(keroroBodyTexture));
+	renderer.AddModel(std::make_unique<Metahuman::KeroroHat>(keroroHatTexture));
 
 	/* 2-2. per-instance Transform/UV 상태 초기화 (모델 인덱스와 1:1 매핑) */
 	const size_t modelCount = renderer.GetModelCount();

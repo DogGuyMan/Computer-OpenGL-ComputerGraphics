@@ -175,6 +175,76 @@ namespace Metahuman
 		}
 	};
 
+	class KeroroHat : public ParametricGeometry, public IUVTransformable
+	{
+	  private:
+		Texture *texture = nullptr;
+		UVTransform uv;
+
+	  public:
+		KeroroHat(Texture *texture = nullptr,
+		          size_t uRes = 32,                       // u 분할 (수평, 경도) — 회전 부드러움
+		          size_t vRes = 16)                       // v 분할 (수직) — 프로파일 곡선
+		    : ParametricGeometry(0.0, 2.0 * M_PI, uRes,   // u = φ ∈ [0, 2π]
+		                         0.0, 0.5, vRes),         // v ∈ [0, 0.5], xz 평면 아래쪽 절반
+		      texture(texture)
+		{
+			build();
+		}
+
+		virtual void SetUV(const UVTransform &t) override
+		{
+			uv = t;
+		}
+		virtual const UVTransform &GetUV() const override
+		{
+			return uv;
+		}
+
+		virtual glm::vec4 SurfaceFunction(double u, double v) const override
+		{
+			// u → φ (수평 경도),  v → 수직 매개변수
+			// 이 (u, v) 배치라야 ∂P/∂u × ∂P/∂v 가 outward normal이 됨
+			const float phi = (float)(u);
+			const float t = (float)(v);
+			const float r = sqrtf(1.0f + t * t);   // r(v) = √(1 + v²)
+			return glm::vec4(r * cosf(phi),
+			                 -t,                    // y = -v (xz 평면 아래쪽으로 벌어짐)
+			                 r * sinf(phi),
+			                 1.0f);
+		}
+
+		void Draw() override
+		{
+			const GLuint id = texture ? texture->GetTextureID() : 0;
+			if (id != 0)
+			{
+				glEnable(GL_TEXTURE_2D);
+				glBindTexture(GL_TEXTURE_2D, id);
+
+				// UV 변환은 GL_TEXTURE 매트릭스 스택에 적용 — 격자가 만든 (s,t)에 곱해짐
+				glMatrixMode(GL_TEXTURE);
+				glPushMatrix();
+				glLoadIdentity();
+				glTranslatef(uv.offset.x, uv.offset.y, 0.0f);
+				glRotatef(uv.rotationDeg, 0.0f, 0.0f, 1.0f);
+				glScalef(uv.scale.x, uv.scale.y, 1.0f);
+				glMatrixMode(GL_MODELVIEW);
+			}
+
+			glColor3f(1.0f, 1.0f, 1.0f);
+			ParametricGeometry::Draw(); // TRS 적용 + 격자 메쉬 렌더
+
+			if (id != 0)
+			{
+				glMatrixMode(GL_TEXTURE);
+				glPopMatrix();
+				glMatrixMode(GL_MODELVIEW);
+				glDisable(GL_TEXTURE_2D);
+			}
+		}
+	};
+
 } // namespace Metahuman
 
 #endif //__METAHUMAN_MODEL_IMP_H__
