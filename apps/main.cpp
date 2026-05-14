@@ -1,3 +1,7 @@
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
