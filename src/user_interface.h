@@ -30,8 +30,12 @@ namespace Metahuman {
 
 	void UIReshape(int w, int h);
 	void UIMouse(int button, int state, int x, int y);
+	void UIMouseWheel(int button, int dir, int x, int y);
 	void UIMotion(int x, int y);
 	void UIKeyboardInput(unsigned char key, int x, int y);
+	void UIKeyboardUpInput(unsigned char key, int x, int y);
+	void UISpecialInput(int key, int x, int y);
+	void UISpecialUpInput(int key, int x, int y);
 }
 
 #endif//__METAHUMAN_USER_INTERFACE_H__

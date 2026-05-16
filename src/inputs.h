@@ -25,6 +25,7 @@ namespace Metahuman {
 		MouseInput();
 		~MouseInput();
 		void BindDragAction(std::function<void(int, int)> action);
+		void CancelDrag();
 		// GLUT 콜백에서 호출
 		void HandleMouse(int button, int state, int x, int y);
 		void HandleMotion(int x, int y);

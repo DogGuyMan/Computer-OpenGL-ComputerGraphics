@@ -38,6 +38,10 @@ void MouseInput::BindDragAction(std::function<void(int, int)> action) {
 	dragAction = action;
 }
 
+void MouseInput::CancelDrag() {
+	isDragging = false;
+}
+
 void MouseInput::HandleMouse(int button, int state, int x, int y) {
 	if(button == GLUT_LEFT_BUTTON) {
 		if(state == GLUT_DOWN) {
