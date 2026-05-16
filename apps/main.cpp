@@ -34,7 +34,7 @@ namespace
 		int width = 800;
 		int height = 600;
 		const char *title = "Application";
-		float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+		float clearColor[4] = {0.5f, 0.5f, 0.5f, 1.0f};
 	};
 
 	std::vector<std::unique_ptr<Metahuman::PODTransform>> g_xforms;
@@ -92,13 +92,27 @@ int main(int argc, char **argv)
 	renderer.AddModel(std::make_unique<Metahuman::KeroroBody>(keroroBodyTexture));
 	renderer.AddModel(std::make_unique<Metahuman::KeroroHat>(keroroHatTexture));
 
-	/* 2-2. per-instance Transform/UV 상태 초기화 (모델 인덱스와 1:1 매핑) */
+	/* 2-2. per-instance Transform/UV 상태 초기화 (모델 인덱스와 1:1 매핑)
+	 *      각 모델 클래스의 Default*()로 g_xforms/g_uvs를 채우고 모델에도 즉시 적용 —
+	 *      프로그램 시작 시점부터 ImGui 값과 모델 상태가 동기화된다. */
 	const size_t modelCount = renderer.GetModelCount();
 	g_xforms.reserve(modelCount);
 	g_uvs.reserve(modelCount);
 	for (size_t i = 0; i < modelCount; ++i) {
 		g_xforms.emplace_back(std::make_unique<Metahuman::PODTransform>());
 		g_uvs.emplace_back(std::make_unique<Metahuman::UVTransform>());
+	}
+	// 등록 순서(KeroroHead=0, KeroroBody=1, KeroroHat=2)에 맞춰 초기 기본값 주입
+	if (modelCount > 0) { *g_xforms[0] = Metahuman::KeroroHead::DefaultTransform(); *g_uvs[0] = Metahuman::KeroroHead::DefaultUV(); }
+	if (modelCount > 1) { *g_xforms[1] = Metahuman::KeroroBody::DefaultTransform(); *g_uvs[1] = Metahuman::KeroroBody::DefaultUV(); }
+	if (modelCount > 2) { *g_xforms[2] = Metahuman::KeroroHat::DefaultTransform();  *g_uvs[2] = Metahuman::KeroroHat::DefaultUV();  }
+	// 모든 모델에 1회 적용 — 매 프레임 루프는 선택 모델만 갱신하므로 시작 시 전체 동기화 필요
+	for (size_t i = 0; i < modelCount; ++i) {
+		Metahuman::Model *m = renderer.GetModel(i);
+		if (!m) continue;
+		m->SetTransform(*g_xforms[i]);
+		if (auto *uvt = dynamic_cast<Metahuman::IUVTransformable *>(m))
+			uvt->SetUV(*g_uvs[i]);
 	}
 
 	/* 3. 입력 바인딩 (정책) */
@@ -157,6 +171,14 @@ void HandleDisplayEvent()
 		                            g_selectedModelIndex,
 		                            modelCount);
 		Metahuman::UIUVPanel("UV", uv);
+		// 선택된 모델이 Parametric 곡면이면 u/v 범위·해상도 패널도 노출
+		if (auto *geo = dynamic_cast<Metahuman::IParametricTransformable *>(
+		        renderer.GetModel((size_t)g_selectedModelIndex)))
+			Metahuman::UIParametricPanel("Parametric", *geo);
+		// 선택된 모델이 Hyperboloid면 형상 파라미터 패널도 노출
+		if (auto *hyp = dynamic_cast<Metahuman::IHyperboloidTransformable *>(
+		        renderer.GetModel((size_t)g_selectedModelIndex)))
+			Metahuman::UIHyperboloidPanel("Hyperboloid", *hyp);
 		Metahuman::UIEndFrame();
 
 		// 선택된 모델에 해당 슬롯의 상태를 적용

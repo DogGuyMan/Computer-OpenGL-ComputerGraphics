@@ -42,12 +42,11 @@ namespace Metahuman
 		void SetTransform(const Metahuman::PODTransform &t);
 	};
 
-	class ParametricGeometry : public Model
+	class ParametricGeometry : public Model, public IParametricTransformable
 	{
 	  protected:
-		double uStart, uEnd;
-		double vStart, vEnd;
-		size_t uRes, vRes;
+		// u/v 범위 + 격자 해상도. SetParametricParams로 교체 시 build() 재호출.
+		ParametricParams params;
 
 		// (uRes+1) × (vRes+1) 격자 캐시. build()에서 한 번 채우고 매 프레임 재사용
 		std::vector<glm::vec4> vertices;
@@ -68,7 +67,12 @@ namespace Metahuman
 
 		// TRS 적용 후 GL_QUAD_STRIP으로 격자 렌더
 		void Draw() override;
-	}; // namespace Metahuman
+
+		// IParametricTransformable — u/v 범위·해상도를 POD 구조체로 노출.
+		// SetParametricParams는 값 교체 후 build()로 메쉬를 재생성한다.
+		void SetParametricParams(const ParametricParams &p) override;
+		const ParametricParams &GetParametricParams() const override;
+	};
 
 } // namespace Metahuman
 

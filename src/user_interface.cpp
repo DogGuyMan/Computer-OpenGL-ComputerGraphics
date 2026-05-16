@@ -102,6 +102,66 @@ void Metahuman::UIUVPanel(const char* label, Metahuman::UVTransform& uv)
 	ImGui::End();
 }
 
+void Metahuman::UIParametricPanel(const char* label, Metahuman::IParametricTransformable& geo)
+{
+	ImGui::Begin(label);
+
+	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
+	Metahuman::ParametricParams p = geo.GetParametricParams();
+	bool changed = false;
+
+	// u/v 범위 — uStart 등은 double. DragScalar로 임시 float 없이 직접 편집.
+	ImGui::TextUnformatted("Range");
+	changed |= ImGui::DragScalar("u Start", ImGuiDataType_Double, &p.uStart, 0.01f, nullptr, nullptr, "%.3f");
+	changed |= ImGui::DragScalar("u End",   ImGuiDataType_Double, &p.uEnd,   0.01f, nullptr, nullptr, "%.3f");
+	changed |= ImGui::DragScalar("v Start", ImGuiDataType_Double, &p.vStart, 0.01f, nullptr, nullptr, "%.3f");
+	changed |= ImGui::DragScalar("v End",   ImGuiDataType_Double, &p.vEnd,   0.01f, nullptr, nullptr, "%.3f");
+
+	// 해상도 — uRes/vRes는 size_t. ImGui에 size_t 위젯이 없어 int 임시값으로 편집 후 클램프.
+	ImGui::Separator();
+	ImGui::TextUnformatted("Resolution");
+	int uResI = static_cast<int>(p.uRes);
+	int vResI = static_cast<int>(p.vRes);
+	bool resChanged = false;
+	resChanged |= ImGui::DragInt("u Res", &uResI, 0.5f, 1, 256);
+	resChanged |= ImGui::DragInt("v Res", &vResI, 0.5f, 1, 256);
+	if (resChanged)
+	{
+		// 0이면 build()에서 0 나눗셈 → 최소 1로 클램프
+		p.uRes = static_cast<size_t>(uResI < 1 ? 1 : uResI);
+		p.vRes = static_cast<size_t>(vResI < 1 ? 1 : vResI);
+		changed = true;
+	}
+
+	// 라이브 재생성 — 값이 바뀐 프레임에만 Set (내부에서 build() 호출)
+	if (changed)
+		geo.SetParametricParams(p);
+
+	ImGui::End();
+}
+
+void Metahuman::UIHyperboloidPanel(const char* label, Metahuman::IHyperboloidTransformable& geo)
+{
+	ImGui::Begin(label);
+
+	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
+	Metahuman::HyperboloidParams p = geo.GetHyperboloidParams();
+	bool changed = false;
+
+	// Paul Bourke 1-sheet hyperboloid 형상 파라미터
+	ImGui::TextUnformatted("Hyperboloid (Paul Bourke)");
+	changed |= ImGui::DragFloat("Radius", &p.radius, 0.01f, 0.0f, 100.0f, "%.3f");
+	changed |= ImGui::DragFloat("Height", &p.height, 0.01f, 0.0f, 100.0f, "%.3f");
+	// shape(d): 0이면 이중원뿔, 클수록 원기둥에 수렴
+	changed |= ImGui::DragFloat("Shape (d)", &p.shape, 0.01f, 0.0f, 100.0f, "%.3f");
+
+	// 라이브 재생성 — 값이 바뀐 프레임에만 Set (내부에서 build() 호출)
+	if (changed)
+		geo.SetHyperboloidParams(p);
+
+	ImGui::End();
+}
+
 void Metahuman::UIReshape(int w, int h) 
 {
 	ImGui_ImplGLUT_ReshapeFunc(w, h);

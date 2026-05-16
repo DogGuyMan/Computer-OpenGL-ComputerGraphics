@@ -28,6 +28,15 @@ namespace Metahuman {
 	                      int& modelIndex, int modelCount);
 	void UIUVPanel(const char* label, Metahuman::UVTransform& uv);
 
+	// Parametric 곡면 모델의 u/v 범위와 해상도를 편집하는 패널.
+	// IParametricTransformable 인터페이스로만 접근 — friend 불필요.
+	// 값이 바뀌면 SetParametricParams() 내부에서 build()로 메쉬가 재생성된다 (라이브).
+	void UIParametricPanel(const char* label, Metahuman::IParametricTransformable& geo);
+
+	// Hyperboloid 곡면 모델의 형상 파라미터(radius/height/shape)를 편집하는 패널.
+	// 값이 바뀌면 SetHyperboloidParams() 내부에서 build()로 메쉬가 재생성된다 (라이브).
+	void UIHyperboloidPanel(const char* label, Metahuman::IHyperboloidTransformable& geo);
+
 	void UIReshape(int w, int h);
 	void UIMouse(int button, int state, int x, int y);
 	void UIMotion(int x, int y);

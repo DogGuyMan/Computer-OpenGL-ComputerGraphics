@@ -2,6 +2,7 @@
 #define __METAHUMAN_INTERFACES_H__
 
 #include <glm/glm.hpp>
+#include <cstddef> // size_t
 
 namespace Metahuman
 {
@@ -22,6 +23,25 @@ namespace Metahuman
 		float rotationDeg = 0.0f;
 	};
 
+	// 매개변수 곡면의 u/v 범위 + 격자 해상도 (per-instance 상태)
+	// ParametricGeometry가 보유. 값이 바뀌면 build()로 메쉬를 재생성한다.
+	struct ParametricParams
+	{
+		double uStart = 0.0, uEnd = 1.0;
+		double vStart = 0.0, vEnd = 1.0;
+		size_t uRes = 16, vRes = 16;
+	};
+
+	// 1-sheet hyperboloid 형상 파라미터 (Paul Bourke, paulbourke.net/geometry/hyperboloid)
+	//   단면 반경 r(s) = radius · √(shape² + s²) / √(shape² + 1)
+	//   shape(=d) → 0: 이중원뿔,  shape ↑: 원기둥에 수렴
+	struct HyperboloidParams
+	{
+		float radius = 1.0f; // 양 끝(s=±1)에서의 단면 반경
+		float height = 1.0f; // 축(높이) 방향 스케일
+		float shape = 1.0f;  // 허리 조임 정도 d (0=원뿔, 클수록 원기둥)
+	};
+
 	class IUVTransformable
 	{
 	  protected:
@@ -35,6 +55,41 @@ namespace Metahuman
 		IUVTransformable operator=(const IUVTransformable &) = delete;
 		IUVTransformable(IUVTransformable &&) = delete;
 		IUVTransformable operator=(IUVTransformable &) = delete;
+	};
+
+	// 매개변수 곡면의 u/v 범위·해상도를 POD 구조체로 노출하는 인터페이스.
+	// UI(ImGui) 측은 이 인터페이스만 알면 되고, friend 없이 접근 가능하다.
+	// SetParametricParams 구현체는 값 교체 후 메쉬를 재생성(build)할 책임이 있다.
+	class IParametricTransformable
+	{
+	  protected:
+		IParametricTransformable() = default;
+
+	  public:
+		virtual ~IParametricTransformable() = default;
+		virtual void SetParametricParams(const ParametricParams &p) = 0;
+		virtual const ParametricParams &GetParametricParams() const = 0;
+		IParametricTransformable(const IParametricTransformable &) = delete;
+		IParametricTransformable operator=(const IParametricTransformable &) = delete;
+		IParametricTransformable(IParametricTransformable &&) = delete;
+		IParametricTransformable operator=(IParametricTransformable &) = delete;
+	};
+
+	// Hyperboloid 형상 파라미터(radius/height/shape)를 POD로 노출하는 인터페이스.
+	// SetHyperboloidParams 구현체는 값 교체 후 메쉬를 재생성(build)할 책임이 있다.
+	class IHyperboloidTransformable
+	{
+	  protected:
+		IHyperboloidTransformable() = default;
+
+	  public:
+		virtual ~IHyperboloidTransformable() = default;
+		virtual void SetHyperboloidParams(const HyperboloidParams &p) = 0;
+		virtual const HyperboloidParams &GetHyperboloidParams() const = 0;
+		IHyperboloidTransformable(const IHyperboloidTransformable &) = delete;
+		IHyperboloidTransformable operator=(const IHyperboloidTransformable &) = delete;
+		IHyperboloidTransformable(IHyperboloidTransformable &&) = delete;
+		IHyperboloidTransformable operator=(IHyperboloidTransformable &) = delete;
 	};
 
 	class ITranslatable

@@ -72,39 +72,42 @@ namespace Metahuman
 
 	ParametricGeometry::ParametricGeometry(double u_start, double u_end, size_t u_res,
 	                                       double v_start, double v_end, size_t v_res)
-	    : uStart(u_start), uEnd(u_end),
-	      vStart(v_start), vEnd(v_end),
-	      uRes(u_res), vRes(v_res)
 	{
+		params.uStart = u_start;
+		params.uEnd = u_end;
+		params.uRes = u_res;
+		params.vStart = v_start;
+		params.vEnd = v_end;
+		params.vRes = v_res;
 		// build()는 자식 생성자에서 호출 — SurfaceFunction이 순수가상이라
 		// 베이스 생성자 시점에선 자식 버전이 디스패치되지 않음
 	}
 
 	void ParametricGeometry::build()
 	{
-		const size_t uCount = uRes + 1;
-		const size_t vCount = vRes + 1;
+		const size_t uCount = params.uRes + 1;
+		const size_t vCount = params.vRes + 1;
 		vertices.resize(uCount * vCount);
 		normals.resize(uCount * vCount);
 		texCoords.resize(uCount * vCount);
 
-		const double du = (uEnd - uStart) / static_cast<double>(uRes);
-		const double dv = (vEnd - vStart) / static_cast<double>(vRes);
+		const double du = (params.uEnd - params.uStart) / static_cast<double>(params.uRes);
+		const double dv = (params.vEnd - params.vStart) / static_cast<double>(params.vRes);
 		// finite difference 스텝 — 격자 간격의 1%면 정밀도/안정성 절충
 		const double eps = std::min(du, dv) * 0.01;
 
 		for (size_t i = 0; i < uCount; ++i)
 		{
-			const double u = uStart + du * static_cast<double>(i);
+			const double u = params.uStart + du * static_cast<double>(i);
 			for (size_t j = 0; j < vCount; ++j)
 			{
-				const double v = vStart + dv * static_cast<double>(j);
+				const double v = params.vStart + dv * static_cast<double>(j);
 				const size_t idx = i * vCount + j;
 
 				vertices[idx] = SurfaceFunction(u, v);
 				texCoords[idx] = glm::vec2(
-				    static_cast<float>(i) / static_cast<float>(uRes),
-				    static_cast<float>(j) / static_cast<float>(vRes));
+				    static_cast<float>(i) / static_cast<float>(params.uRes),
+				    static_cast<float>(j) / static_cast<float>(params.vRes));
 
 				const glm::vec4 pu = SurfaceFunction(u + eps, v);
 				const glm::vec4 pv = SurfaceFunction(u, v + eps);
@@ -125,11 +128,11 @@ namespace Metahuman
 		glPushMatrix();
 		glMultMatrixf(glm::value_ptr(modelMatrix));
 
-		const size_t vCount = vRes + 1;
-		for (size_t i = 0; i < uRes; ++i)
+		const size_t vCount = params.vRes + 1;
+		for (size_t i = 0; i < params.uRes; ++i)
 		{
 			glBegin(GL_QUAD_STRIP);
-			for (size_t j = 0; j <= vRes; ++j)
+			for (size_t j = 0; j <= params.vRes; ++j)
 			{
 				const size_t idx0 = i * vCount + j;
 				const size_t idx1 = (i + 1) * vCount + j;
@@ -146,6 +149,18 @@ namespace Metahuman
 		}
 
 		glPopMatrix();
+	}
+
+	void ParametricGeometry::SetParametricParams(const ParametricParams &p)
+	{
+		params = p;
+		// u/v 범위·해상도가 바뀌었으니 격자 메쉬를 즉시 재생성
+		build();
+	}
+
+	const ParametricParams &ParametricGeometry::GetParametricParams() const
+	{
+		return params;
 	}
 
 } // namespace Metahuman

@@ -41,6 +41,7 @@ namespace Metahuman
 		           int stacks = 16)
 		    : texture(texture), radius(radius), slices(slices), stacks(stacks)
 		{
+			uv = DefaultUV(); // 초기 UV 기본값 — 모델이 스스로 기본값으로 출발
 			// quadric은 옵션 누적 컨테이너 — 도형 별로 매번 옵션 지정하지 않아도 되도록 분리됨
 			quadric = gluNewQuadric();
 			gluQuadricDrawStyle(quadric, GLU_FILL);      // 채워진 면
@@ -67,6 +68,23 @@ namespace Metahuman
 		virtual const UVTransform &GetUV() const override
 		{
 			return uv;
+		}
+
+		// 프로그램 시작 시 ImGui(g_xforms/g_uvs)와 모델 상태를 동기화하기 위한 초기 기본값
+		static PODTransform DefaultTransform()
+		{
+			PODTransform t;
+			t.translate = glm::vec3(0.0f, 0.0f, 0.0f);
+			t.eulerDeg = glm::vec3(90.0f, 0.0f, 0.0f);
+			t.scale = glm::vec3(1.0f, 1.0f, 0.95f);
+			return t;
+		}
+		static UVTransform DefaultUV()
+		{
+			UVTransform u;
+			u.offset = glm::vec2(0.0f, -0.550f);
+			u.scale = glm::vec2(3.8f, 1.95f);
+			return u;
 		}
 
 		void Draw() override
@@ -121,7 +139,8 @@ namespace Metahuman
 		                         0.1, M_PI, thetaRes),    // v = θ ∈ [0.1, π], 꼭대기 cusp 회피
 		      texture(texture)
 		{
-			build(); // 가상 SurfaceFunction이 준비된 후에 호출
+			uv = DefaultUV(); // 초기 UV 기본값 — 모델이 스스로 기본값으로 출발
+			build();          // 가상 SurfaceFunction이 준비된 후에 호출
 		}
 
 		virtual void SetUV(const UVTransform &t) override
@@ -131,6 +150,23 @@ namespace Metahuman
 		virtual const UVTransform &GetUV() const override
 		{
 			return uv;
+		}
+
+		// 프로그램 시작 시 ImGui(g_xforms/g_uvs)와 모델 상태를 동기화하기 위한 초기 기본값
+		static PODTransform DefaultTransform()
+		{
+			PODTransform t;
+			t.translate = glm::vec3(0.0f, -1.2f, 0.0f);
+			t.eulerDeg = glm::vec3(0.0f, 0.0f, 0.0f);
+			t.scale = glm::vec3(0.7f, 0.65f, 0.7f);
+			return t;
+		}
+		static UVTransform DefaultUV()
+		{
+			UVTransform u;
+			u.offset = glm::vec2(-0.475f, -0.750f);
+			u.scale = glm::vec2(2.65f, 2.20f);
+			return u;
 		}
 
 		virtual glm::vec4 SurfaceFunction(double u, double v) const override
@@ -175,20 +211,23 @@ namespace Metahuman
 		}
 	};
 
-	class KeroroHat : public ParametricGeometry, public IUVTransformable
+	class KeroroHat : public ParametricGeometry, public IUVTransformable, public IHyperboloidTransformable
 	{
 	  private:
 		Texture *texture = nullptr;
 		UVTransform uv;
+		// 형상 파라미터 — radius / height / shape(d)
+		HyperboloidParams hyper{2.074f, 2.7f, 0.52f};
 
 	  public:
 		KeroroHat(Texture *texture = nullptr,
 		          size_t uRes = 32,                       // u 분할 (수평, 경도) — 회전 부드러움
 		          size_t vRes = 16)                       // v 분할 (수직) — 프로파일 곡선
 		    : ParametricGeometry(0.0, 2.0 * M_PI, uRes,   // u = φ ∈ [0, 2π]
-		                         0.0, 0.5, vRes),         // v ∈ [0, 0.5], xz 평면 아래쪽 절반
+		                         0.06, 0.5, vRes),        // v ∈ [0.06, 0.5], xz 평면 아래쪽 절반
 		      texture(texture)
 		{
+			uv = DefaultUV(); // 초기 UV 기본값 — 모델이 스스로 기본값으로 출발
 			build();
 		}
 
@@ -201,15 +240,47 @@ namespace Metahuman
 			return uv;
 		}
 
+		// 프로그램 시작 시 ImGui(g_xforms/g_uvs)와 모델 상태를 동기화하기 위한 초기 기본값
+		static PODTransform DefaultTransform()
+		{
+			PODTransform t;
+			t.translate = glm::vec3(0.0f, 0.5f, 0.0f);
+			t.eulerDeg = glm::vec3(0.0f, -173.0f, 0.0f);
+			t.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+			return t;
+		}
+		static UVTransform DefaultUV()
+		{
+			UVTransform u;
+			u.offset = glm::vec2(0.0f, -0.050f);
+			u.scale = glm::vec2(1.2f, 1.0f);
+			return u;
+		}
+
+		// IHyperboloidTransformable — 형상 파라미터를 POD로 노출.
+		// Set은 값 교체 후 build()로 메쉬를 재생성한다.
+		virtual void SetHyperboloidParams(const HyperboloidParams &p) override
+		{
+			hyper = p;
+			build();
+		}
+		virtual const HyperboloidParams &GetHyperboloidParams() const override
+		{
+			return hyper;
+		}
+
 		virtual glm::vec4 SurfaceFunction(double u, double v) const override
 		{
-			// u → φ (수평 경도),  v → 수직 매개변수
+			// Paul Bourke 1-sheet hyperboloid (paulbourke.net/geometry/hyperboloid)
+			//   단면 반경 r(s) = radius · √(d² + s²) / √(d² + 1),   s = v
+			// u → φ (수평 경도),  v → s (수직 매개변수)
 			// 이 (u, v) 배치라야 ∂P/∂u × ∂P/∂v 가 outward normal이 됨
 			const float phi = (float)(u);
-			const float t = (float)(v);
-			const float r = sqrtf(1.0f + t * t);   // r(v) = √(1 + v²)
+			const float s = (float)(v);
+			const float d = hyper.shape;
+			const float r = hyper.radius * sqrtf(d * d + s * s) / sqrtf(d * d + 1.0f);
 			return glm::vec4(r * cosf(phi),
-			                 -t,                    // y = -v (xz 평면 아래쪽으로 벌어짐)
+			                 -hyper.height * s,     // y = -h·s (xz 평면 아래쪽으로 벌어짐)
 			                 r * sinf(phi),
 			                 1.0f);
 		}
