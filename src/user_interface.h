@@ -30,6 +30,7 @@ namespace Metahuman {
 	void UIUVPanel(const char* label, Metahuman::UVTransform& uv);
 	bool UIModelAddPanel(const char* label, const char* const* modelTypes, int modelTypeCount,
 	                     int& selectedTypeIndex, int& id);
+	bool UIScenePanel(const char* label, const char* savePath, int saveStatus);
 
 	void UIReshape(int w, int h);
 	void UIMouse(int button, int state, int x, int y);

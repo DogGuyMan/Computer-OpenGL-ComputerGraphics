@@ -129,6 +129,20 @@ bool Metahuman::UIModelAddPanel(const char* label, const char* const* modelTypes
 	return addRequested;
 }
 
+bool Metahuman::UIScenePanel(const char* label, const char* savePath, int saveStatus)
+{
+	bool saveRequested = false;
+	ImGui::Begin(label);
+	ImGui::Text("Path: %s", savePath);
+	saveRequested = ImGui::Button("Save JSON");
+	if (saveStatus == 1)
+		ImGui::Text("Save complete");
+	else if (saveStatus == 0)
+		ImGui::Text("Save failed");
+	ImGui::End();
+	return saveRequested;
+}
+
 void Metahuman::UIReshape(int w, int h) 
 {
 	ImGui_ImplGLUT_ReshapeFunc(w, h);

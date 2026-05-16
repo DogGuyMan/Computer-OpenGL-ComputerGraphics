@@ -21,7 +21,10 @@
 #include <array>
 #include <cstddef>
 #include <cstdio>
+#include <cstring>
+#include <fstream>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace
@@ -53,6 +56,13 @@ namespace
 		ModelType type;
 	};
 
+	struct SceneModelState
+	{
+		ModelMeta meta;
+		Metahuman::PODTransform xform;
+		Metahuman::UVTransform uv;
+	};
+
 	std::vector<std::unique_ptr<Metahuman::PODTransform>> g_xforms;
 	std::vector<std::unique_ptr<Metahuman::UVTransform>>  g_uvs;
 	std::vector<ModelMeta> g_modelMetas;
@@ -62,8 +72,10 @@ namespace
 	Metahuman::Texture* g_keroroBodyTexture = nullptr;
 	Metahuman::Texture* g_keroroHatTexture = nullptr;
 	const char* const g_modelTypes[] = {"KeroroHead", "KeroroBody", "KeroroHat"};
+	const char* g_sceneSavePath = "resources/scene_state.json";
 	int g_addModelTypeIndex = 0;
 	int g_addModelId = 0;
+	int g_saveStatus = -1;
 
 } // namespace
 
@@ -103,10 +115,20 @@ void HandleMotion(int, int );
 void HandlePassiveMotion(int, int );
 ModelType ModelTypeFromIndex(int index);
 const char* GetModelTypeLabel(ModelType type);
+bool TryParseModelType(const char* label, ModelType& type);
 bool AddModel(ModelType type, int id);
-bool IsModelIdUsed(ModelType type, int id);
-int MakeDefaultModelId(ModelType type);
+bool IsModelIdUsed(int id);
+int MakeDefaultModelId();
 void MakeModelLabel(const ModelMeta& meta, char* buffer, size_t bufferSize);
+bool AddModelState(const SceneModelState& state);
+bool LoadSceneState(const char* path);
+bool SaveSceneState(const char* path);
+int ScanIntLine(const std::string& line, const char* format, int& value);
+int ScanSizeLine(const std::string& line, const char* format, size_t& value);
+int ScanFloatLine(const std::string& line, const char* format, float& x);
+int ScanFloat2Line(const std::string& line, const char* format, float& x, float& y);
+int ScanFloat3Line(const std::string& line, const char* format, float& x, float& y, float& z);
+int ScanTypeLine(const std::string& line, char* buffer, size_t bufferSize);
 
 int main(int argc, char **argv)
 {
@@ -122,12 +144,10 @@ int main(int argc, char **argv)
 	g_keroroFaceTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_FACE);
 	g_keroroBodyTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_BODY);
 	g_keroroHatTexture  = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_HAT);
-	AddModel(ModelType::KeroroHead, 0);
-	AddModel(ModelType::KeroroBody, 0);
-	AddModel(ModelType::KeroroHat, 0);
-	g_selectedModelIndex = 0;
+	if (!LoadSceneState(g_sceneSavePath))
+		g_saveStatus = 0;
 
-	g_addModelId = MakeDefaultModelId(ModelTypeFromIndex(g_addModelTypeIndex));
+	g_addModelId = MakeDefaultModelId();
 
 	/* 3. 입력 바인딩 (정책) */
 	input.BindKeyAction('a', [] { camera.Zoom(-0.5); });
@@ -205,8 +225,9 @@ void HandleDisplayEvent()
 		                               g_addModelTypeIndex, g_addModelId)) {
 			const ModelType type = ModelTypeFromIndex(g_addModelTypeIndex);
 			if (AddModel(type, g_addModelId))
-				g_addModelId = MakeDefaultModelId(type);
+				g_addModelId = MakeDefaultModelId();
 		}
+		const bool saveRequested = Metahuman::UIScenePanel("Scene", g_sceneSavePath, g_saveStatus);
 		Metahuman::UIEndFrame();
 
 		// 이번 프레임에 편집한 슬롯의 상태를 적용
@@ -215,6 +236,8 @@ void HandleDisplayEvent()
 			if (auto *uvTransform = dynamic_cast<Metahuman::IUVTransformable *>(model))
 				uvTransform->SetUV(uv);
 		}
+		if (saveRequested)
+			g_saveStatus = SaveSceneState(g_sceneSavePath) ? 1 : 0;
 	}
 
 	glutSwapBuffers();
@@ -242,19 +265,36 @@ const char* GetModelTypeLabel(ModelType type)
 	return "Unknown";
 }
 
-bool IsModelIdUsed(ModelType type, int id)
+bool TryParseModelType(const char* label, ModelType& type)
+{
+	if (std::strcmp(label, "KeroroHead") == 0) {
+		type = ModelType::KeroroHead;
+		return true;
+	}
+	if (std::strcmp(label, "KeroroBody") == 0) {
+		type = ModelType::KeroroBody;
+		return true;
+	}
+	if (std::strcmp(label, "KeroroHat") == 0) {
+		type = ModelType::KeroroHat;
+		return true;
+	}
+	return false;
+}
+
+bool IsModelIdUsed(int id)
 {
 	for (const auto& meta : g_modelMetas) {
-		if (meta.type == type && meta.id == id)
+		if (meta.id == id)
 			return true;
 	}
 	return false;
 }
 
-int MakeDefaultModelId(ModelType type)
+int MakeDefaultModelId()
 {
 	for (int i = 0;; ++i) {
-		if (!IsModelIdUsed(type, i))
+		if (!IsModelIdUsed(i))
 			return i;
 	}
 }
@@ -266,7 +306,7 @@ void MakeModelLabel(const ModelMeta& meta, char* buffer, size_t bufferSize)
 
 bool AddModel(ModelType type, int id)
 {
-	if (id < 0 || IsModelIdUsed(type, id))
+	if (id < 0 || IsModelIdUsed(id))
 		return false;
 
 	switch (type) {
@@ -286,6 +326,203 @@ bool AddModel(ModelType type, int id)
 	g_uvs.emplace_back(std::make_unique<Metahuman::UVTransform>());
 	g_selectedModelIndex = (int)renderer.GetModelCount() - 1;
 	return true;
+}
+
+bool AddModelState(const SceneModelState& state)
+{
+	if (!AddModel(state.meta.type, state.meta.id))
+		return false;
+
+	const size_t index = g_xforms.size() - 1;
+	*g_xforms[index] = state.xform;
+	*g_uvs[index] = state.uv;
+	if (auto *model = renderer.GetModel(index)) {
+		model->SetTransform(state.xform);
+		if (auto *uvTransform = dynamic_cast<Metahuman::IUVTransformable *>(model))
+			uvTransform->SetUV(state.uv);
+	}
+	return true;
+}
+
+bool LoadSceneState(const char* path)
+{
+	std::ifstream in(path);
+	if (!in)
+		return false;
+
+	int selectedModelIndex = 0;
+	SceneModelState current{};
+	bool readingModel = false;
+	bool inTransform = false;
+	bool inUv = false;
+	std::string line;
+
+	while (std::getline(in, line)) {
+		if (ScanIntLine(line, "  \"selectedModelIndex\": %d", selectedModelIndex) == 1)
+			continue;
+
+		size_t index = 0;
+		if (ScanSizeLine(line, "      \"index\": %zu", index) == 1) {
+			current = SceneModelState{};
+			readingModel = true;
+			inTransform = false;
+			inUv = false;
+			continue;
+		}
+
+		if (!readingModel)
+			continue;
+
+		if (ScanIntLine(line, "      \"id\": %d", current.meta.id) == 1)
+			continue;
+
+		char typeLabel[64] = {};
+		if (ScanTypeLine(line, typeLabel, sizeof(typeLabel)) == 1) {
+			if (!TryParseModelType(typeLabel, current.meta.type))
+				return false;
+			continue;
+		}
+
+		if (line.find("\"transform\"") != std::string::npos) {
+			inTransform = true;
+			inUv = false;
+			continue;
+		}
+		if (line.find("\"uv\"") != std::string::npos) {
+			inTransform = false;
+			inUv = true;
+			continue;
+		}
+
+		if (inTransform) {
+			if (ScanFloat3Line(line, "        \"translate\": [%f, %f, %f]",
+			                   current.xform.translate.x, current.xform.translate.y, current.xform.translate.z) == 3)
+				continue;
+			if (ScanFloat3Line(line, "        \"rotateDeg\": [%f, %f, %f]",
+			                   current.xform.eulerDeg.x, current.xform.eulerDeg.y, current.xform.eulerDeg.z) == 3)
+				continue;
+			if (ScanFloat3Line(line, "        \"scale\": [%f, %f, %f]",
+			                   current.xform.scale.x, current.xform.scale.y, current.xform.scale.z) == 3)
+				continue;
+		}
+
+		if (inUv) {
+			if (ScanFloat2Line(line, "        \"offset\": [%f, %f]",
+			                   current.uv.offset.x, current.uv.offset.y) == 2)
+				continue;
+			if (ScanFloat2Line(line, "        \"scale\": [%f, %f]",
+			                   current.uv.scale.x, current.uv.scale.y) == 2)
+				continue;
+			if (ScanFloatLine(line, "        \"rotationDeg\": %f", current.uv.rotationDeg) == 1)
+				continue;
+		}
+
+		if (line.rfind("    }", 0) == 0) {
+			if (!AddModelState(current))
+				return false;
+			readingModel = false;
+			inTransform = false;
+			inUv = false;
+		}
+	}
+
+	if (renderer.GetModelCount() == 0)
+		return false;
+	if (selectedModelIndex < 0)
+		selectedModelIndex = 0;
+	if (selectedModelIndex >= (int)renderer.GetModelCount())
+		selectedModelIndex = (int)renderer.GetModelCount() - 1;
+	g_selectedModelIndex = selectedModelIndex;
+	return true;
+}
+
+int ScanIntLine(const std::string& line, const char* format, int& value)
+{
+#ifdef _MSC_VER
+	return sscanf_s(line.c_str(), format, &value);
+#else
+	return std::sscanf(line.c_str(), format, &value);
+#endif
+}
+
+int ScanSizeLine(const std::string& line, const char* format, size_t& value)
+{
+#ifdef _MSC_VER
+	return sscanf_s(line.c_str(), format, &value);
+#else
+	return std::sscanf(line.c_str(), format, &value);
+#endif
+}
+
+int ScanFloatLine(const std::string& line, const char* format, float& x)
+{
+#ifdef _MSC_VER
+	return sscanf_s(line.c_str(), format, &x);
+#else
+	return std::sscanf(line.c_str(), format, &x);
+#endif
+}
+
+int ScanFloat2Line(const std::string& line, const char* format, float& x, float& y)
+{
+#ifdef _MSC_VER
+	return sscanf_s(line.c_str(), format, &x, &y);
+#else
+	return std::sscanf(line.c_str(), format, &x, &y);
+#endif
+}
+
+int ScanFloat3Line(const std::string& line, const char* format, float& x, float& y, float& z)
+{
+#ifdef _MSC_VER
+	return sscanf_s(line.c_str(), format, &x, &y, &z);
+#else
+	return std::sscanf(line.c_str(), format, &x, &y, &z);
+#endif
+}
+
+int ScanTypeLine(const std::string& line, char* buffer, size_t bufferSize)
+{
+#ifdef _MSC_VER
+	return sscanf_s(line.c_str(), "      \"type\": \"%63[^\"]\"", buffer, (unsigned)bufferSize);
+#else
+	return std::sscanf(line.c_str(), "      \"type\": \"%63[^\"]\"", buffer);
+#endif
+}
+
+bool SaveSceneState(const char* path)
+{
+	std::ofstream out(path);
+	if (!out)
+		return false;
+
+	out << "{\n";
+	out << "  \"version\": 1,\n";
+	out << "  \"selectedModelIndex\": " << g_selectedModelIndex << ",\n";
+	out << "  \"models\": [\n";
+	for (size_t i = 0; i < g_modelMetas.size(); ++i) {
+		const auto& meta = g_modelMetas[i];
+		const auto& xform = *g_xforms[i];
+		const auto& uv = *g_uvs[i];
+		out << "    {\n";
+		out << "      \"index\": " << i << ",\n";
+		out << "      \"id\": " << meta.id << ",\n";
+		out << "      \"type\": \"" << GetModelTypeLabel(meta.type) << "\",\n";
+		out << "      \"transform\": {\n";
+		out << "        \"translate\": [" << xform.translate.x << ", " << xform.translate.y << ", " << xform.translate.z << "],\n";
+		out << "        \"rotateDeg\": [" << xform.eulerDeg.x << ", " << xform.eulerDeg.y << ", " << xform.eulerDeg.z << "],\n";
+		out << "        \"scale\": [" << xform.scale.x << ", " << xform.scale.y << ", " << xform.scale.z << "]\n";
+		out << "      },\n";
+		out << "      \"uv\": {\n";
+		out << "        \"offset\": [" << uv.offset.x << ", " << uv.offset.y << "],\n";
+		out << "        \"scale\": [" << uv.scale.x << ", " << uv.scale.y << "],\n";
+		out << "        \"rotationDeg\": " << uv.rotationDeg << "\n";
+		out << "      }\n";
+		out << "    }" << (i + 1 < g_modelMetas.size() ? "," : "") << "\n";
+	}
+	out << "  ]\n";
+	out << "}\n";
+	return (bool)out;
 }
 
 void HandleKeyboardInput(unsigned char key, int x, int y)
