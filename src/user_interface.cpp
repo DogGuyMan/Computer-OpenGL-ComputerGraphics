@@ -62,20 +62,19 @@ void Metahuman::UIEndFrame()
 }
 
 void Metahuman::UITransformPanel(const char* label, Metahuman::PODTransform& form,
-                                 int& modelIndex, int modelCount)
+                                 int& modelIndex, const std::vector<const char*>& modelLabels)
 {
 	ImGui::Begin(label);
 
+	const int modelCount = (int)modelLabels.size();
 	if (modelCount > 0) {
 		if (modelIndex < 0) modelIndex = 0;
 		if (modelIndex >= modelCount) modelIndex = modelCount - 1;
 
-		char preview[32];
-		std::snprintf(preview, sizeof(preview), "Model %d", modelIndex);
+		const char* preview = modelLabels[(size_t)modelIndex];
 		if (ImGui::BeginCombo("Target Model", preview)) {
 			for (int i = 0; i < modelCount; ++i) {
-				char item[32];
-				std::snprintf(item, sizeof(item), "Model %d", i);
+				const char* item = modelLabels[(size_t)i];
 				const bool selected = (i == modelIndex);
 				if (ImGui::Selectable(item, selected))
 					modelIndex = i;
@@ -160,6 +159,34 @@ void Metahuman::UIHyperboloidPanel(const char* label, Metahuman::IHyperboloidTra
 		geo.SetHyperboloidParams(p);
 
 	ImGui::End();
+}
+
+bool Metahuman::UIModelAddPanel(const char* label, const char* const* modelTypes, int modelTypeCount,
+                                int& selectedTypeIndex, int& id)
+{
+	bool addRequested = false;
+	ImGui::Begin(label);
+
+	if (modelTypeCount > 0) {
+		if (selectedTypeIndex < 0) selectedTypeIndex = 0;
+		if (selectedTypeIndex >= modelTypeCount) selectedTypeIndex = modelTypeCount - 1;
+
+		if (ImGui::BeginCombo("Type", modelTypes[selectedTypeIndex])) {
+			for (int i = 0; i < modelTypeCount; ++i) {
+				const bool selected = (i == selectedTypeIndex);
+				if (ImGui::Selectable(modelTypes[i], selected))
+					selectedTypeIndex = i;
+				if (selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+	}
+
+	ImGui::InputInt("ID", &id);
+	addRequested = ImGui::Button("Add Model");
+	ImGui::End();
+	return addRequested;
 }
 
 void Metahuman::UIReshape(int w, int h) 

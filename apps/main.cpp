@@ -18,6 +18,9 @@
 #include "transformable.h"
 #include "user_interface.h"
 #include <imgui.h>
+#include <array>
+#include <cstddef>
+#include <cstdio>
 #include <memory>
 #include <vector>
 
@@ -37,10 +40,30 @@ namespace
 		float clearColor[4] = {0.5f, 0.5f, 0.5f, 1.0f};
 	};
 
+	enum class ModelType
+	{
+		KeroroHead,
+		KeroroBody,
+		KeroroHat
+	};
+
+	struct ModelMeta
+	{
+		int id;
+		ModelType type;
+	};
+
 	std::vector<std::unique_ptr<Metahuman::PODTransform>> g_xforms;
 	std::vector<std::unique_ptr<Metahuman::UVTransform>>  g_uvs;
+	std::vector<ModelMeta> g_modelMetas;
 	Metahuman::ResourceManagement g_rm = Metahuman::ResourceManagement();
 	int g_selectedModelIndex = 0;
+	Metahuman::Texture* g_keroroFaceTexture = nullptr;
+	Metahuman::Texture* g_keroroBodyTexture = nullptr;
+	Metahuman::Texture* g_keroroHatTexture = nullptr;
+	const char* const g_modelTypes[] = {"KeroroHead", "KeroroBody", "KeroroHat"};
+	int g_addModelTypeIndex = 0;
+	int g_addModelId = 0;
 
 } // namespace
 
@@ -78,6 +101,12 @@ void HandleMouse(int, int, int , int );
 void HandleMouseWheel(int, int, int , int );
 void HandleMotion(int, int );
 void HandlePassiveMotion(int, int );
+ModelType ModelTypeFromIndex(int index);
+const char* GetModelTypeLabel(ModelType type);
+bool AddModel(ModelType type, int id);
+bool IsModelIdUsed(ModelType type, int id);
+int MakeDefaultModelId(ModelType type);
+void MakeModelLabel(const ModelMeta& meta, char* buffer, size_t bufferSize);
 
 int main(int argc, char **argv)
 {
@@ -90,35 +119,38 @@ int main(int argc, char **argv)
 	camera.SetFovSpeed(10.0);
 
 	/* 2-1. 모델 등록 — KeroroHat은 알파 PNG이므로 불투명 모델(head/body) 뒤에 등록(=마지막 draw) */
-	auto keroroFaceTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_FACE);
-	auto keroroBodyTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_BODY);
-	auto keroroHatTexture  = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_HAT);
-	renderer.AddModel(std::make_unique<Metahuman::KeroroHead>(keroroFaceTexture));
-	renderer.AddModel(std::make_unique<Metahuman::KeroroBody>(keroroBodyTexture));
-	renderer.AddModel(std::make_unique<Metahuman::KeroroHat>(keroroHatTexture));
+	g_keroroFaceTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_FACE);
+	g_keroroBodyTexture = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_BODY);
+	g_keroroHatTexture  = g_rm.LoadTexture(Metahuman::TEXTURE::TEX_KERORO_HAT);
+	AddModel(ModelType::KeroroHead, 0);
+	AddModel(ModelType::KeroroBody, 0);
+	AddModel(ModelType::KeroroHat, 0);
+	g_selectedModelIndex = 0;
 
-	/* 2-2. per-instance Transform/UV 상태 초기화 (모델 인덱스와 1:1 매핑)
-	 *      각 모델 클래스의 Default*()로 g_xforms/g_uvs를 채우고 모델에도 즉시 적용 —
-	 *      프로그램 시작 시점부터 ImGui 값과 모델 상태가 동기화된다. */
-	const size_t modelCount = renderer.GetModelCount();
-	g_xforms.reserve(modelCount);
-	g_uvs.reserve(modelCount);
-	for (size_t i = 0; i < modelCount; ++i) {
-		g_xforms.emplace_back(std::make_unique<Metahuman::PODTransform>());
-		g_uvs.emplace_back(std::make_unique<Metahuman::UVTransform>());
-	}
-	// 등록 순서(KeroroHead=0, KeroroBody=1, KeroroHat=2)에 맞춰 초기 기본값 주입
-	if (modelCount > 0) { *g_xforms[0] = Metahuman::KeroroHead::DefaultTransform(); *g_uvs[0] = Metahuman::KeroroHead::DefaultUV(); }
-	if (modelCount > 1) { *g_xforms[1] = Metahuman::KeroroBody::DefaultTransform(); *g_uvs[1] = Metahuman::KeroroBody::DefaultUV(); }
-	if (modelCount > 2) { *g_xforms[2] = Metahuman::KeroroHat::DefaultTransform();  *g_uvs[2] = Metahuman::KeroroHat::DefaultUV();  }
-	// 모든 모델에 1회 적용 — 매 프레임 루프는 선택 모델만 갱신하므로 시작 시 전체 동기화 필요
-	for (size_t i = 0; i < modelCount; ++i) {
-		Metahuman::Model *m = renderer.GetModel(i);
-		if (!m) continue;
-		m->SetTransform(*g_xforms[i]);
-		if (auto *uvt = dynamic_cast<Metahuman::IUVTransformable *>(m))
-			uvt->SetUV(*g_uvs[i]);
-	}
+	// /* 2-2. per-instance Transform/UV 상태 초기화 (모델 인덱스와 1:1 매핑)
+	//  *      각 모델 클래스의 Default*()로 g_xforms/g_uvs를 채우고 모델에도 즉시 적용 —
+	//  *      프로그램 시작 시점부터 ImGui 값과 모델 상태가 동기화된다. */
+	// const size_t modelCount = renderer.GetModelCount();
+	// g_xforms.reserve(modelCount);
+	// g_uvs.reserve(modelCount);
+	// for (size_t i = 0; i < modelCount; ++i) {
+	// 	g_xforms.emplace_back(std::make_unique<Metahuman::PODTransform>());
+	// 	g_uvs.emplace_back(std::make_unique<Metahuman::UVTransform>());
+	// }
+	// // 등록 순서(KeroroHead=0, KeroroBody=1, KeroroHat=2)에 맞춰 초기 기본값 주입
+	// if (modelCount > 0) { *g_xforms[0] = Metahuman::KeroroHead::DefaultTransform(); *g_uvs[0] = Metahuman::KeroroHead::DefaultUV(); }
+	// if (modelCount > 1) { *g_xforms[1] = Metahuman::KeroroBody::DefaultTransform(); *g_uvs[1] = Metahuman::KeroroBody::DefaultUV(); }
+	// if (modelCount > 2) { *g_xforms[2] = Metahuman::KeroroHat::DefaultTransform();  *g_uvs[2] = Metahuman::KeroroHat::DefaultUV();  }
+	// // 모든 모델에 1회 적용 — 매 프레임 루프는 선택 모델만 갱신하므로 시작 시 전체 동기화 필요
+	// for (size_t i = 0; i < modelCount; ++i) {
+	// 	Metahuman::Model *m = renderer.GetModel(i);
+	// 	if (!m) continue;
+	// 	m->SetTransform(*g_xforms[i]);
+	// 	if (auto *uvt = dynamic_cast<Metahuman::IUVTransformable *>(m))
+	// 		uvt->SetUV(*g_uvs[i]);
+	// }
+
+	g_addModelId = MakeDefaultModelId(ModelTypeFromIndex(g_addModelTypeIndex));
 
 	/* 3. 입력 바인딩 (정책) */
 	input.BindKeyAction('a', [] { camera.Zoom(-0.5); });
@@ -175,13 +207,24 @@ void HandleDisplayEvent()
 		if (g_selectedModelIndex < 0) g_selectedModelIndex = 0;
 		if (g_selectedModelIndex >= modelCount) g_selectedModelIndex = modelCount - 1;
 
-		auto& xform = *g_xforms[(size_t)g_selectedModelIndex];
-		auto& uv    = *g_uvs   [(size_t)g_selectedModelIndex];
+		const int editedModelIndex = g_selectedModelIndex;
+		auto& xform = *g_xforms[(size_t)editedModelIndex];
+		auto& uv    = *g_uvs   [(size_t)editedModelIndex];
+		std::vector<std::array<char, 64>> modelLabelStorage;
+		std::vector<const char*> modelLabels;
+		modelLabelStorage.resize((size_t)modelCount);
+		modelLabels.reserve((size_t)modelCount);
+		for (int i = 0; i < modelCount; ++i) {
+			MakeModelLabel(g_modelMetas[(size_t)i],
+			               modelLabelStorage[(size_t)i].data(),
+			               modelLabelStorage[(size_t)i].size());
+			modelLabels.push_back(modelLabelStorage[(size_t)i].data());
+		}
 
 		Metahuman::UIBeginFrame();
 		Metahuman::UITransformPanel("Transform", xform,
 		                            g_selectedModelIndex,
-		                            modelCount);
+		                            modelLabels);
 		Metahuman::UIUVPanel("UV", uv);
 		// 선택된 모델이 Parametric 곡면이면 u/v 범위·해상도 패널도 노출
 		if (auto *geo = dynamic_cast<Metahuman::IParametricTransformable *>(
@@ -191,10 +234,18 @@ void HandleDisplayEvent()
 		if (auto *hyp = dynamic_cast<Metahuman::IHyperboloidTransformable *>(
 		        renderer.GetModel((size_t)g_selectedModelIndex)))
 			Metahuman::UIHyperboloidPanel("Hyperboloid", *hyp);
+	
+		// 런타임중 모델 추가.
+		if (Metahuman::UIModelAddPanel("Models", g_modelTypes, (int)(sizeof(g_modelTypes) / sizeof(g_modelTypes[0])),
+		                               g_addModelTypeIndex, g_addModelId)) {
+			const ModelType type = ModelTypeFromIndex(g_addModelTypeIndex);
+			if (AddModel(type, g_addModelId))
+				g_addModelId = MakeDefaultModelId(type);
+		}
 		Metahuman::UIEndFrame();
 
-		// 선택된 모델에 해당 슬롯의 상태를 적용
-		if (auto *model = renderer.GetModel((size_t)g_selectedModelIndex)) {
+		// 이번 프레임에 편집한 슬롯의 상태를 적용
+		if (auto *model = renderer.GetModel((size_t)editedModelIndex)) {
 			model->SetTransform(xform);
 			if (auto *uvTransform = dynamic_cast<Metahuman::IUVTransformable *>(model))
 				uvTransform->SetUV(uv);
@@ -202,6 +253,74 @@ void HandleDisplayEvent()
 	}
 
 	glutSwapBuffers();
+}
+
+ModelType ModelTypeFromIndex(int index)
+{
+	if (index == 1)
+		return ModelType::KeroroBody;
+	if (index == 2)
+		return ModelType::KeroroHat;
+	return ModelType::KeroroHead;
+}
+
+const char* GetModelTypeLabel(ModelType type)
+{
+	switch (type) {
+	case ModelType::KeroroHead:
+		return "KeroroHead";
+	case ModelType::KeroroBody:
+		return "KeroroBody";
+	case ModelType::KeroroHat:
+		return "KeroroHat";
+	}
+	return "Unknown";
+}
+
+bool IsModelIdUsed(ModelType type, int id)
+{
+	for (const auto& meta : g_modelMetas) {
+		if (meta.type == type && meta.id == id)
+			return true;
+	}
+	return false;
+}
+
+int MakeDefaultModelId(ModelType type)
+{
+	for (int i = 0;; ++i) {
+		if (!IsModelIdUsed(type, i))
+			return i;
+	}
+}
+
+void MakeModelLabel(const ModelMeta& meta, char* buffer, size_t bufferSize)
+{
+	std::snprintf(buffer, bufferSize, "%d [%s]", meta.id, GetModelTypeLabel(meta.type));
+}
+
+bool AddModel(ModelType type, int id)
+{
+	if (id < 0 || IsModelIdUsed(type, id))
+		return false;
+
+	switch (type) {
+	case ModelType::KeroroHead:
+		renderer.AddModel(std::make_unique<Metahuman::KeroroHead>(g_keroroFaceTexture));
+		break;
+	case ModelType::KeroroBody:
+		renderer.AddModel(std::make_unique<Metahuman::KeroroBody>(g_keroroBodyTexture));
+		break;
+	case ModelType::KeroroHat:
+		renderer.AddModel(std::make_unique<Metahuman::KeroroHat>(g_keroroHatTexture));
+		break;
+	}
+
+	g_modelMetas.push_back({id, type});
+	g_xforms.emplace_back(std::make_unique<Metahuman::PODTransform>());
+	g_uvs.emplace_back(std::make_unique<Metahuman::UVTransform>());
+	g_selectedModelIndex = (int)renderer.GetModelCount() - 1;
+	return true;
 }
 
 void HandleKeyboardInput(unsigned char key, int x, int y)
