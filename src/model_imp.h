@@ -19,7 +19,6 @@
 
 namespace Metahuman
 {
-
 	// 텍스처가 매핑된 GLU 구체 모델
 	// * Texture GL 핸들 소유권은 ResourceManagement에 있음 (여긴 borrowed pointer)
 	// * quadric은 인스턴스마다 하나씩 보유 (소멸 시 gluDeleteQuadric)
@@ -41,7 +40,7 @@ namespace Metahuman
 		           int stacks = 16)
 		    : texture(texture), radius(radius), slices(slices), stacks(stacks)
 		{
-			trans = DefaultTransform();
+			SetTransform(DefaultTransform());
 			uv = DefaultUV(); // 초기 UV 기본값 — 모델이 스스로 기본값으로 출발
 			// quadric은 옵션 누적 컨테이너 — 도형 별로 매번 옵션 지정하지 않아도 되도록 분리됨
 			quadric = gluNewQuadric();
@@ -140,7 +139,7 @@ namespace Metahuman
 		                         0.1, M_PI, thetaRes),    // v = θ ∈ [0.1, π], 꼭대기 cusp 회피
 		      texture(texture)
 		{
-			trans = DefaultTransform();
+			SetTransform(DefaultTransform());
 			uv = DefaultUV(); // 초기 UV 기본값 — 모델이 스스로 기본값으로 출발
 			build();          // 가상 SurfaceFunction이 준비된 후에 호출
 		}
@@ -223,13 +222,13 @@ namespace Metahuman
 
 	  public:
 		KeroroHat(Texture *texture = nullptr,
-		          size_t uRes = 32,                       // u 분할 (수평, 경도) — 회전 부드러움
-		          size_t vRes = 16)                       // v 분할 (수직) — 프로파일 곡선
-		    : ParametricGeometry(0.0, 2.0 * M_PI, uRes,   // u = φ ∈ [0, 2π]
-		                         0.06, 0.5, vRes),        // v ∈ [0.06, 0.5], xz 평면 아래쪽 절반
+		          size_t uRes = 32,                     // u 분할 (수평, 경도) — 회전 부드러움
+		          size_t vRes = 16)                     // v 분할 (수직) — 프로파일 곡선
+		    : ParametricGeometry(0.0, 2.0 * M_PI, uRes, // u = φ ∈ [0, 2π]
+		                         0.06, 0.5, vRes),      // v ∈ [0.06, 0.5], xz 평면 아래쪽 절반
 		      texture(texture)
 		{
-			trans = DefaultTransform();
+			SetTransform(DefaultTransform());
 			uv = DefaultUV(); // 초기 UV 기본값 — 모델이 스스로 기본값으로 출발
 			build();
 		}
@@ -276,14 +275,14 @@ namespace Metahuman
 		{
 			// Paul Bourke 1-sheet hyperboloid (paulbourke.net/geometry/hyperboloid)
 			//   단면 반경 r(s) = radius · √(d² + s²) / √(d² + 1),   s = v
-			// u → φ (수평 경도),  v → s (수직 매개변수)
+			// u -> φ (수평 경도),  v -> s (수직 매개변수)
 			// 이 (u, v) 배치라야 ∂P/∂u × ∂P/∂v 가 outward normal이 됨
 			const float phi = (float)(u);
 			const float s = (float)(v);
 			const float d = hyper.shape;
 			const float r = hyper.radius * sqrtf(d * d + s * s) / sqrtf(d * d + 1.0f);
 			return glm::vec4(r * cosf(phi),
-			                 -hyper.height * s,     // y = -h·s (xz 평면 아래쪽으로 벌어짐)
+			                 -hyper.height * s, // y = -h·s (xz 평면 아래쪽으로 벌어짐)
 			                 r * sinf(phi),
 			                 1.0f);
 		}

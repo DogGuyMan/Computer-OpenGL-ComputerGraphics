@@ -13,6 +13,7 @@
 
 namespace Metahuman
 {
+	
 	class Model : public ITransformable
 	{
 	  protected:
@@ -62,7 +63,7 @@ namespace Metahuman
 		// 노멀은 finite difference로 계산 (퇴화 시 (0,1,0) fallback).
 		void build();
 
-		// 도형별 매개변수 곡면 함수. (u, v) → (x, y, z, 1)
+		// 도형별 매개변수 곡면 함수. (u, v) -> (x, y, z, 1)
 		virtual glm::vec4 SurfaceFunction(double u, double v) const = 0;
 
 	  public:

@@ -51,10 +51,9 @@ namespace Metahuman
 
 	class ResourceManagement
 	{
-	private:
-		std::unordered_map<std::string, std::unique_ptr<Texture>> textures;
 
 	public:
+		std::unordered_map<std::string, std::unique_ptr<Texture>> textures;
 		// 소유권(ownership)과 접근(access)은 다르다.
 		// Raw Pointer는 누구나 접근은 가능하다 다만, 소유권은 못가져옴
 		// unique_ptr가 raw 노출을 막아주지는 못한다.

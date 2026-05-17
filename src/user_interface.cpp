@@ -1,4 +1,5 @@
 #include "user_interface.h"
+#include "constants.h"
 #include "glm/gtc/type_ptr.hpp"
 #include <cstdio>
 #include <imgui.h>
@@ -72,7 +73,7 @@ void Metahuman::UITransformPanel(const char* label, Metahuman::ITransformable& t
 		if (modelIndex >= modelCount) modelIndex = modelCount - 1;
 
 		const char* preview = modelLabels[(size_t)modelIndex];
-		if (ImGui::BeginCombo("Target Model", preview)) {
+		if (ImGui::BeginCombo(Metahuman::UI::LABEL::TARGET_MODEL, preview)) {
 			for (int i = 0; i < modelCount; ++i) {
 				const char* item = modelLabels[(size_t)i];
 				const bool selected = (i == modelIndex);
@@ -89,9 +90,9 @@ void Metahuman::UITransformPanel(const char* label, Metahuman::ITransformable& t
 	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
 	Metahuman::TransformValue form = transform.GetPODTransform();
 	bool changed = false;
-	changed |= ImGui::DragFloat3("Position", glm::value_ptr(form.translate), 0.05f);
-	changed |= ImGui::DragFloat3("Rotate(deg)", glm::value_ptr(form.eulerDeg), 1.0f);
-	changed |= ImGui::DragFloat3("Scale", glm::value_ptr(form.scale), 0.05f);
+	changed |= ImGui::DragFloat3(Metahuman::UI::LABEL::POSITION,   glm::value_ptr(form.translate), 0.05f);
+	changed |= ImGui::DragFloat3(Metahuman::UI::LABEL::ROTATE_DEG, glm::value_ptr(form.eulerDeg),  1.0f);
+	changed |= ImGui::DragFloat3(Metahuman::UI::LABEL::SCALE,      glm::value_ptr(form.scale),     0.05f);
 	if (changed)
 		transform.SetTransform(form);
 
@@ -105,9 +106,9 @@ void Metahuman::UIUVPanel(const char* label, Metahuman::IUVTransformable& uvt)
 	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
 	Metahuman::UVValue uv = uvt.GetUV();
 	bool changed = false;
-	changed |= ImGui::DragFloat2("UV Offset", glm::value_ptr(uv.offset), 0.05f);
-	changed |= ImGui::DragFloat2("UV Scale",  glm::value_ptr(uv.scale),  0.05f);
-	changed |= ImGui::DragFloat ("UV Rotate(deg)", &uv.rotationDeg, 1.0f);
+	changed |= ImGui::DragFloat2(Metahuman::UI::LABEL::UV_OFFSET,     glm::value_ptr(uv.offset), 0.05f);
+	changed |= ImGui::DragFloat2(Metahuman::UI::LABEL::UV_SCALE,      glm::value_ptr(uv.scale),  0.05f);
+	changed |= ImGui::DragFloat (Metahuman::UI::LABEL::UV_ROTATE_DEG, &uv.rotationDeg,           1.0f);
 	if (changed)
 		uvt.SetUV(uv);
 
@@ -123,23 +124,23 @@ void Metahuman::UIParametricPanel(const char* label, Metahuman::IParametricTrans
 	bool changed = false;
 
 	// u/v 범위 — uStart 등은 double. DragScalar로 임시 float 없이 직접 편집.
-	ImGui::TextUnformatted("Range");
-	changed |= ImGui::DragScalar("u Start", ImGuiDataType_Double, &p.uStart, 0.01f, nullptr, nullptr, "%.3f");
-	changed |= ImGui::DragScalar("u End",   ImGuiDataType_Double, &p.uEnd,   0.01f, nullptr, nullptr, "%.3f");
-	changed |= ImGui::DragScalar("v Start", ImGuiDataType_Double, &p.vStart, 0.01f, nullptr, nullptr, "%.3f");
-	changed |= ImGui::DragScalar("v End",   ImGuiDataType_Double, &p.vEnd,   0.01f, nullptr, nullptr, "%.3f");
+	ImGui::TextUnformatted(Metahuman::UI::LABEL::RANGE);
+	changed |= ImGui::DragScalar(Metahuman::UI::LABEL::U_START, ImGuiDataType_Double, &p.uStart, 0.01f, nullptr, nullptr, "%.3f");
+	changed |= ImGui::DragScalar(Metahuman::UI::LABEL::U_END,   ImGuiDataType_Double, &p.uEnd,   0.01f, nullptr, nullptr, "%.3f");
+	changed |= ImGui::DragScalar(Metahuman::UI::LABEL::V_START, ImGuiDataType_Double, &p.vStart, 0.01f, nullptr, nullptr, "%.3f");
+	changed |= ImGui::DragScalar(Metahuman::UI::LABEL::V_END,   ImGuiDataType_Double, &p.vEnd,   0.01f, nullptr, nullptr, "%.3f");
 
 	// 해상도 — uRes/vRes는 size_t. ImGui에 size_t 위젯이 없어 int 임시값으로 편집 후 클램프.
 	ImGui::Separator();
-	ImGui::TextUnformatted("Resolution");
+	ImGui::TextUnformatted(Metahuman::UI::LABEL::RESOLUTION);
 	int uResI = static_cast<int>(p.uRes);
 	int vResI = static_cast<int>(p.vRes);
 	bool resChanged = false;
-	resChanged |= ImGui::DragInt("u Res", &uResI, 0.5f, 1, 256);
-	resChanged |= ImGui::DragInt("v Res", &vResI, 0.5f, 1, 256);
+	resChanged |= ImGui::DragInt(Metahuman::UI::LABEL::U_RES, &uResI, 0.5f, 1, 256);
+	resChanged |= ImGui::DragInt(Metahuman::UI::LABEL::V_RES, &vResI, 0.5f, 1, 256);
 	if (resChanged)
 	{
-		// 0이면 build()에서 0 나눗셈 → 최소 1로 클램프
+		// 0이면 build()에서 0 나눗셈 -> 최소 1로 클램프
 		p.uRes = static_cast<size_t>(uResI < 1 ? 1 : uResI);
 		p.vRes = static_cast<size_t>(vResI < 1 ? 1 : vResI);
 		changed = true;
@@ -161,11 +162,11 @@ void Metahuman::UIHyperboloidPanel(const char* label, Metahuman::IHyperboloidTra
 	bool changed = false;
 
 	// Paul Bourke 1-sheet hyperboloid 형상 파라미터
-	ImGui::TextUnformatted("Hyperboloid (Paul Bourke)");
-	changed |= ImGui::DragFloat("Radius", &p.radius, 0.01f, 0.0f, 100.0f, "%.3f");
-	changed |= ImGui::DragFloat("Height", &p.height, 0.01f, 0.0f, 100.0f, "%.3f");
+	ImGui::TextUnformatted(Metahuman::UI::LABEL::HYPERBOLOID_HEADER);
+	changed |= ImGui::DragFloat(Metahuman::UI::LABEL::RADIUS, &p.radius, 0.01f, 0.0f, 100.0f, "%.3f");
+	changed |= ImGui::DragFloat(Metahuman::UI::LABEL::HEIGHT, &p.height, 0.01f, 0.0f, 100.0f, "%.3f");
 	// shape(d): 0이면 이중원뿔, 클수록 원기둥에 수렴
-	changed |= ImGui::DragFloat("Shape (d)", &p.shape, 0.01f, 0.0f, 100.0f, "%.3f");
+	changed |= ImGui::DragFloat(Metahuman::UI::LABEL::SHAPE,  &p.shape,  0.01f, 0.0f, 100.0f, "%.3f");
 
 	// 라이브 재생성 — 값이 바뀐 프레임에만 Set (내부에서 build() 호출)
 	if (changed)
@@ -184,7 +185,7 @@ bool Metahuman::UIModelAddPanel(const char* label, const char* const* modelTypes
 		if (selectedTypeIndex < 0) selectedTypeIndex = 0;
 		if (selectedTypeIndex >= modelTypeCount) selectedTypeIndex = modelTypeCount - 1;
 
-		if (ImGui::BeginCombo("Type", modelTypes[selectedTypeIndex])) {
+		if (ImGui::BeginCombo(Metahuman::UI::LABEL::TYPE, modelTypes[selectedTypeIndex])) {
 			for (int i = 0; i < modelTypeCount; ++i) {
 				const bool selected = (i == selectedTypeIndex);
 				if (ImGui::Selectable(modelTypes[i], selected))
@@ -196,8 +197,8 @@ bool Metahuman::UIModelAddPanel(const char* label, const char* const* modelTypes
 		}
 	}
 
-	ImGui::InputInt("ID", &id);
-	addRequested = ImGui::Button("Add Model");
+	ImGui::InputInt(Metahuman::UI::LABEL::ID, &id);
+	addRequested = ImGui::Button(Metahuman::UI::LABEL::ADD_MODEL);
 	ImGui::End();
 	return addRequested;
 }
@@ -207,11 +208,11 @@ bool Metahuman::UIScenePanel(const char* label, const char* savePath, int saveSt
 	bool saveRequested = false;
 	ImGui::Begin(label);
 	ImGui::Text("Path: %s", savePath);
-	saveRequested = ImGui::Button("Save JSON");
+	saveRequested = ImGui::Button(Metahuman::UI::LABEL::SAVE_JSON);
 	if (saveStatus == 1)
-		ImGui::Text("Save complete");
+		ImGui::TextUnformatted(Metahuman::UI::LABEL::SAVE_COMPLETE);
 	else if (saveStatus == 0)
-		ImGui::Text("Save failed");
+		ImGui::TextUnformatted(Metahuman::UI::LABEL::SAVE_FAILED);
 	ImGui::End();
 	return saveRequested;
 }
