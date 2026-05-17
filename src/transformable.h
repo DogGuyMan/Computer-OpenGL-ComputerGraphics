@@ -6,7 +6,7 @@
 
 namespace Metahuman
 {
-	struct PODTransform
+	struct TransformValue
 	{
 		glm::vec3 translate{0.0f, 0.0f, 0.0f};
 		glm::vec3 eulerDeg{0.0f, 0.0f, 0.0f}; // XYZ, DEG
@@ -16,7 +16,7 @@ namespace Metahuman
 	// 텍스처 좌표 변환 (per-instance 상태)
 	// quadric/mesh가 자동 생성한 (s,t) UV에 GL_TEXTURE 매트릭스로 곱해진다.
 	// Material 모듈 도입 전까지는 텍스처를 쓰는 모델 자식 클래스가 직접 보유.
-	struct UVTransform
+	struct UVValue
 	{
 		glm::vec2 offset{0.0f, 0.0f};
 		glm::vec2 scale{1.0f, 1.0f};
@@ -25,7 +25,7 @@ namespace Metahuman
 
 	// 매개변수 곡면의 u/v 범위 + 격자 해상도 (per-instance 상태)
 	// ParametricGeometry가 보유. 값이 바뀌면 build()로 메쉬를 재생성한다.
-	struct ParametricParams
+	struct ParametricValue
 	{
 		double uStart = 0.0, uEnd = 1.0;
 		double vStart = 0.0, vEnd = 1.0;
@@ -35,7 +35,7 @@ namespace Metahuman
 	// 1-sheet hyperboloid 형상 파라미터 (Paul Bourke, paulbourke.net/geometry/hyperboloid)
 	//   단면 반경 r(s) = radius · √(shape² + s²) / √(shape² + 1)
 	//   shape(=d) → 0: 이중원뿔,  shape ↑: 원기둥에 수렴
-	struct HyperboloidParams
+	struct HyperboloidValue
 	{
 		float radius = 1.0f; // 양 끝(s=±1)에서의 단면 반경
 		float height = 1.0f; // 축(높이) 방향 스케일
@@ -49,8 +49,8 @@ namespace Metahuman
 
 	  public:
 		virtual ~IUVTransformable() = default;
-		virtual void SetUV(const UVTransform &t) = 0;
-		virtual const UVTransform &GetUV() const = 0;
+		virtual void SetUV(const UVValue &t) = 0;
+		virtual const UVValue &GetUV() const = 0;
 		IUVTransformable(const IUVTransformable &) = delete;
 		IUVTransformable operator=(const IUVTransformable &) = delete;
 		IUVTransformable(IUVTransformable &&) = delete;
@@ -67,8 +67,8 @@ namespace Metahuman
 
 	  public:
 		virtual ~IParametricTransformable() = default;
-		virtual void SetParametricParams(const ParametricParams &p) = 0;
-		virtual const ParametricParams &GetParametricParams() const = 0;
+		virtual void SetParametricParams(const ParametricValue &p) = 0;
+		virtual const ParametricValue &GetParametricParams() const = 0;
 		IParametricTransformable(const IParametricTransformable &) = delete;
 		IParametricTransformable operator=(const IParametricTransformable &) = delete;
 		IParametricTransformable(IParametricTransformable &&) = delete;
@@ -84,8 +84,8 @@ namespace Metahuman
 
 	  public:
 		virtual ~IHyperboloidTransformable() = default;
-		virtual void SetHyperboloidParams(const HyperboloidParams &p) = 0;
-		virtual const HyperboloidParams &GetHyperboloidParams() const = 0;
+		virtual void SetHyperboloidParams(const HyperboloidValue &p) = 0;
+		virtual const HyperboloidValue &GetHyperboloidParams() const = 0;
 		IHyperboloidTransformable(const IHyperboloidTransformable &) = delete;
 		IHyperboloidTransformable operator=(const IHyperboloidTransformable &) = delete;
 		IHyperboloidTransformable(IHyperboloidTransformable &&) = delete;
@@ -141,6 +141,8 @@ namespace Metahuman
 
 	  public:
 		virtual ~ITransformable() = default;
+		virtual const TransformValue &GetPODTransform() const = 0;
+		virtual void SetTransform(const TransformValue &p) = 0;
 		ITransformable(const ITransformable &) = delete;
 		ITransformable operator=(const ITransformable &) = delete;
 		ITransformable(ITransformable &&) = delete;

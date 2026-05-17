@@ -29,7 +29,7 @@ namespace Metahuman
 	  private:
 		GLUquadric *quadric = nullptr;
 		Texture *texture = nullptr;
-		UVTransform uv;
+		UVValue uv;
 		double radius = 1.0;
 		int slices = 32;
 		int stacks = 16;
@@ -41,6 +41,7 @@ namespace Metahuman
 		           int stacks = 16)
 		    : texture(texture), radius(radius), slices(slices), stacks(stacks)
 		{
+			trans = DefaultTransform();
 			uv = DefaultUV(); // 초기 UV 기본값 — 모델이 스스로 기본값으로 출발
 			// quadric은 옵션 누적 컨테이너 — 도형 별로 매번 옵션 지정하지 않아도 되도록 분리됨
 			quadric = gluNewQuadric();
@@ -61,27 +62,27 @@ namespace Metahuman
 
 		// 추후에 텍스쳐 쓰는도형 안쓰는 도형 나눠서
 		// 컴포넌트로 제작해서 확장 높이자.
-		virtual void SetUV(const UVTransform &t) override
+		virtual void SetUV(const UVValue &t) override
 		{
 			uv = t;
 		}
-		virtual const UVTransform &GetUV() const override
+		virtual const UVValue &GetUV() const override
 		{
 			return uv;
 		}
 
 		// 프로그램 시작 시 ImGui(g_xforms/g_uvs)와 모델 상태를 동기화하기 위한 초기 기본값
-		static PODTransform DefaultTransform()
+		static TransformValue DefaultTransform()
 		{
-			PODTransform t;
+			TransformValue t;
 			t.translate = glm::vec3(0.0f, 0.0f, 0.0f);
 			t.eulerDeg = glm::vec3(90.0f, 0.0f, 0.0f);
 			t.scale = glm::vec3(1.0f, 1.0f, 0.95f);
 			return t;
 		}
-		static UVTransform DefaultUV()
+		static UVValue DefaultUV()
 		{
-			UVTransform u;
+			UVValue u;
 			u.offset = glm::vec2(0.0f, -0.550f);
 			u.scale = glm::vec2(3.8f, 1.95f);
 			return u;
@@ -129,7 +130,7 @@ namespace Metahuman
 	{
 	  private:
 		Texture *texture = nullptr;
-		UVTransform uv;
+		UVValue uv;
 
 	  public:
 		KeroroBody(Texture *texture = nullptr,
@@ -139,31 +140,32 @@ namespace Metahuman
 		                         0.1, M_PI, thetaRes),    // v = θ ∈ [0.1, π], 꼭대기 cusp 회피
 		      texture(texture)
 		{
+			trans = DefaultTransform();
 			uv = DefaultUV(); // 초기 UV 기본값 — 모델이 스스로 기본값으로 출발
 			build();          // 가상 SurfaceFunction이 준비된 후에 호출
 		}
 
-		virtual void SetUV(const UVTransform &t) override
+		virtual void SetUV(const UVValue &t) override
 		{
 			uv = t;
 		}
-		virtual const UVTransform &GetUV() const override
+		virtual const UVValue &GetUV() const override
 		{
 			return uv;
 		}
 
 		// 프로그램 시작 시 ImGui(g_xforms/g_uvs)와 모델 상태를 동기화하기 위한 초기 기본값
-		static PODTransform DefaultTransform()
+		static TransformValue DefaultTransform()
 		{
-			PODTransform t;
+			TransformValue t;
 			t.translate = glm::vec3(0.0f, -1.2f, 0.0f);
 			t.eulerDeg = glm::vec3(0.0f, 0.0f, 0.0f);
 			t.scale = glm::vec3(0.7f, 0.65f, 0.7f);
 			return t;
 		}
-		static UVTransform DefaultUV()
+		static UVValue DefaultUV()
 		{
-			UVTransform u;
+			UVValue u;
 			u.offset = glm::vec2(-0.475f, -0.750f);
 			u.scale = glm::vec2(2.65f, 2.20f);
 			return u;
@@ -215,9 +217,9 @@ namespace Metahuman
 	{
 	  private:
 		Texture *texture = nullptr;
-		UVTransform uv;
+		UVValue uv;
 		// 형상 파라미터 — radius / height / shape(d)
-		HyperboloidParams hyper{2.074f, 2.7f, 0.52f};
+		HyperboloidValue hyper{2.074f, 2.7f, 0.52f};
 
 	  public:
 		KeroroHat(Texture *texture = nullptr,
@@ -227,31 +229,32 @@ namespace Metahuman
 		                         0.06, 0.5, vRes),        // v ∈ [0.06, 0.5], xz 평면 아래쪽 절반
 		      texture(texture)
 		{
+			trans = DefaultTransform();
 			uv = DefaultUV(); // 초기 UV 기본값 — 모델이 스스로 기본값으로 출발
 			build();
 		}
 
-		virtual void SetUV(const UVTransform &t) override
+		virtual void SetUV(const UVValue &t) override
 		{
 			uv = t;
 		}
-		virtual const UVTransform &GetUV() const override
+		virtual const UVValue &GetUV() const override
 		{
 			return uv;
 		}
 
 		// 프로그램 시작 시 ImGui(g_xforms/g_uvs)와 모델 상태를 동기화하기 위한 초기 기본값
-		static PODTransform DefaultTransform()
+		static TransformValue DefaultTransform()
 		{
-			PODTransform t;
+			TransformValue t;
 			t.translate = glm::vec3(0.0f, 0.5f, 0.0f);
 			t.eulerDeg = glm::vec3(0.0f, -173.0f, 0.0f);
 			t.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 			return t;
 		}
-		static UVTransform DefaultUV()
+		static UVValue DefaultUV()
 		{
-			UVTransform u;
+			UVValue u;
 			u.offset = glm::vec2(0.0f, -0.050f);
 			u.scale = glm::vec2(1.2f, 1.0f);
 			return u;
@@ -259,12 +262,12 @@ namespace Metahuman
 
 		// IHyperboloidTransformable — 형상 파라미터를 POD로 노출.
 		// Set은 값 교체 후 build()로 메쉬를 재생성한다.
-		virtual void SetHyperboloidParams(const HyperboloidParams &p) override
+		virtual void SetHyperboloidParams(const HyperboloidValue &p) override
 		{
 			hyper = p;
 			build();
 		}
-		virtual const HyperboloidParams &GetHyperboloidParams() const override
+		virtual const HyperboloidValue &GetHyperboloidParams() const override
 		{
 			return hyper;
 		}

@@ -16,6 +16,10 @@ namespace Metahuman
 	class Model : public ITransformable
 	{
 	  protected:
+		// POD 형태의 변환 상태 — GetPODTransform()의 const& 반환을 위해 보관.
+		// Translate/Rotate/Scale이 각 필드를 갱신해 아래 TRS 행렬과 항상 정합 유지.
+		TransformValue trans;
+
 		// TRS 분리 저장
 		glm::mat4 modelTMatrix = glm::mat4(1.0f);
 		glm::mat4 modelRMatrix = glm::mat4(1.0f);
@@ -34,19 +38,20 @@ namespace Metahuman
 		virtual void Draw();
 
 		const glm::mat4 &GetModelMatrix();
+		virtual const TransformValue &GetPODTransform() const override;
+		virtual void SetTransform(const TransformValue &p) override;
 
 		/* Transformable — 모두 절대값 설정 (누적 아님) */
 		void Translate(const glm::fvec3 &pos) override;
 		void Rotate(const glm::fvec3 &eulerDeg) override;
 		void Scale(const glm::fvec3 &factor) override;
-		void SetTransform(const Metahuman::PODTransform &t);
 	};
 
 	class ParametricGeometry : public Model, public IParametricTransformable
 	{
 	  protected:
 		// u/v 범위 + 격자 해상도. SetParametricParams로 교체 시 build() 재호출.
-		ParametricParams params;
+		ParametricValue params;
 
 		// (uRes+1) × (vRes+1) 격자 캐시. build()에서 한 번 채우고 매 프레임 재사용
 		std::vector<glm::vec4> vertices;
@@ -68,10 +73,12 @@ namespace Metahuman
 		// TRS 적용 후 GL_QUAD_STRIP으로 격자 렌더
 		void Draw() override;
 
+		// GetPODTransform/SetTransform은 Model 구현을 그대로 상속 (TRS는 메쉬와 무관).
+
 		// IParametricTransformable — u/v 범위·해상도를 POD 구조체로 노출.
 		// SetParametricParams는 값 교체 후 build()로 메쉬를 재생성한다.
-		void SetParametricParams(const ParametricParams &p) override;
-		const ParametricParams &GetParametricParams() const override;
+		void SetParametricParams(const ParametricValue &p) override;
+		const ParametricValue &GetParametricParams() const override;
 	};
 
 } // namespace Metahuman

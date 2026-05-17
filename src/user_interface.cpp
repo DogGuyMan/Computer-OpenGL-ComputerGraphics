@@ -61,7 +61,7 @@ void Metahuman::UIEndFrame()
 	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Metahuman::UITransformPanel(const char* label, Metahuman::PODTransform& form,
+void Metahuman::UITransformPanel(const char* label, Metahuman::ITransformable& transform,
                                  int& modelIndex, const std::vector<const char*>& modelLabels)
 {
 	ImGui::Begin(label);
@@ -86,18 +86,31 @@ void Metahuman::UITransformPanel(const char* label, Metahuman::PODTransform& for
 		ImGui::Separator();
 	}
 
-	ImGui::DragFloat3("Position", glm::value_ptr(form.translate), 0.05f);
-	ImGui::DragFloat3("Rotate(deg)", glm::value_ptr(form.eulerDeg), 1.0f);
-	ImGui::DragFloat3("Scale", glm::value_ptr(form.scale), 0.05f);
+	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
+	Metahuman::TransformValue form = transform.GetPODTransform();
+	bool changed = false;
+	changed |= ImGui::DragFloat3("Position", glm::value_ptr(form.translate), 0.05f);
+	changed |= ImGui::DragFloat3("Rotate(deg)", glm::value_ptr(form.eulerDeg), 1.0f);
+	changed |= ImGui::DragFloat3("Scale", glm::value_ptr(form.scale), 0.05f);
+	if (changed)
+		transform.SetTransform(form);
+
 	ImGui::End();
 }
 
-void Metahuman::UIUVPanel(const char* label, Metahuman::UVTransform& uv)
+void Metahuman::UIUVPanel(const char* label, Metahuman::IUVTransformable& uvt)
 {
 	ImGui::Begin(label);
-	ImGui::DragFloat2("UV Offset", glm::value_ptr(uv.offset), 0.05f);
-	ImGui::DragFloat2("UV Scale",  glm::value_ptr(uv.scale),  0.05f);
-	ImGui::DragFloat ("UV Rotate(deg)", &uv.rotationDeg, 1.0f);
+
+	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
+	Metahuman::UVValue uv = uvt.GetUV();
+	bool changed = false;
+	changed |= ImGui::DragFloat2("UV Offset", glm::value_ptr(uv.offset), 0.05f);
+	changed |= ImGui::DragFloat2("UV Scale",  glm::value_ptr(uv.scale),  0.05f);
+	changed |= ImGui::DragFloat ("UV Rotate(deg)", &uv.rotationDeg, 1.0f);
+	if (changed)
+		uvt.SetUV(uv);
+
 	ImGui::End();
 }
 
@@ -106,7 +119,7 @@ void Metahuman::UIParametricPanel(const char* label, Metahuman::IParametricTrans
 	ImGui::Begin(label);
 
 	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
-	Metahuman::ParametricParams p = geo.GetParametricParams();
+	Metahuman::ParametricValue p = geo.GetParametricParams();
 	bool changed = false;
 
 	// u/v 범위 — uStart 등은 double. DragScalar로 임시 float 없이 직접 편집.
@@ -144,7 +157,7 @@ void Metahuman::UIHyperboloidPanel(const char* label, Metahuman::IHyperboloidTra
 	ImGui::Begin(label);
 
 	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
-	Metahuman::HyperboloidParams p = geo.GetHyperboloidParams();
+	Metahuman::HyperboloidValue p = geo.GetHyperboloidParams();
 	bool changed = false;
 
 	// Paul Bourke 1-sheet hyperboloid 형상 파라미터
@@ -187,6 +200,20 @@ bool Metahuman::UIModelAddPanel(const char* label, const char* const* modelTypes
 	addRequested = ImGui::Button("Add Model");
 	ImGui::End();
 	return addRequested;
+}
+
+bool Metahuman::UIScenePanel(const char* label, const char* savePath, int saveStatus)
+{
+	bool saveRequested = false;
+	ImGui::Begin(label);
+	ImGui::Text("Path: %s", savePath);
+	saveRequested = ImGui::Button("Save JSON");
+	if (saveStatus == 1)
+		ImGui::Text("Save complete");
+	else if (saveStatus == 0)
+		ImGui::Text("Save failed");
+	ImGui::End();
+	return saveRequested;
 }
 
 void Metahuman::UIReshape(int w, int h) 

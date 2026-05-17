@@ -43,12 +43,14 @@ namespace Metahuman
 
 	void Model::Translate(const glm::fvec3 &pos)
 	{
+		trans.translate = pos;
 		modelTMatrix = glm::translate(glm::mat4(1.0f), pos);
 		dirtyFlag = true;
 	}
 
 	void Model::Rotate(const glm::fvec3 &eulerDeg)
 	{
+		trans.eulerDeg = eulerDeg;
 		const glm::vec3 r = glm::radians(eulerDeg);
 		const glm::mat4 rx = glm::rotate(glm::mat4(1.0f), r.x, glm::vec3(1.0f, 0.0f, 0.0f));
 		const glm::mat4 ry = glm::rotate(glm::mat4(1.0f), r.y, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -59,15 +61,22 @@ namespace Metahuman
 
 	void Model::Scale(const glm::fvec3 &factor)
 	{
+		trans.scale = factor;
 		modelSMatrix = glm::scale(glm::mat4(1.0f), factor);
 		dirtyFlag = true;
 	}
 
-	void Model::SetTransform(const Metahuman::PODTransform &t)
+	void Model::SetTransform(const Metahuman::TransformValue &t)
 	{
+		// Translate/Rotate/Scale이 각자 podtransform 필드를 갱신하므로 자동 정합.
 		Translate(t.translate);
 		Rotate(t.eulerDeg);
 		Scale(t.scale);
+	}
+
+	const TransformValue &Model::GetPODTransform() const
+	{
+		return trans;
 	}
 
 	ParametricGeometry::ParametricGeometry(double u_start, double u_end, size_t u_res,
@@ -151,14 +160,14 @@ namespace Metahuman
 		glPopMatrix();
 	}
 
-	void ParametricGeometry::SetParametricParams(const ParametricParams &p)
+	void ParametricGeometry::SetParametricParams(const ParametricValue &p)
 	{
 		params = p;
 		// u/v 범위·해상도가 바뀌었으니 격자 메쉬를 즉시 재생성
 		build();
 	}
 
-	const ParametricParams &ParametricGeometry::GetParametricParams() const
+	const ParametricValue &ParametricGeometry::GetParametricParams() const
 	{
 		return params;
 	}
