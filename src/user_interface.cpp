@@ -172,6 +172,11 @@ void Metahuman::UIMouse(int button, int state, int x, int y)
 	ImGui_ImplGLUT_MouseFunc(button, state, x, y);
 }
 
+void Metahuman::UIMouseWheel(int button, int dir, int x, int y)
+{
+	ImGui_ImplGLUT_MouseWheelFunc(button, dir, x, y);
+}
+
 void Metahuman::UIMotion(int x, int y) 
 {
 	ImGui_ImplGLUT_MotionFunc(x, y);
@@ -179,4 +184,16 @@ void Metahuman::UIMotion(int x, int y)
 
 void Metahuman::UIKeyboardInput(unsigned char key, int x, int y) {
 	ImGui_ImplGLUT_KeyboardFunc(key, x, y);
+}
+
+void Metahuman::UIKeyboardUpInput(unsigned char key, int x, int y) {
+	ImGui_ImplGLUT_KeyboardUpFunc(key, x, y);
+}
+
+void Metahuman::UISpecialInput(int key, int x, int y) {
+	ImGui_ImplGLUT_SpecialFunc(key, x, y);
+}
+
+void Metahuman::UISpecialUpInput(int key, int x, int y) {
+	ImGui_ImplGLUT_SpecialUpFunc(key, x, y);
 }

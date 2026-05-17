@@ -71,8 +71,13 @@ void QuitApplication()
 void HandleWindowReshapeEvent(int, int);
 void HandleDisplayEvent();
 void HandleKeyboardInput(unsigned char, int , int );
+void HandleKeyboardUpInput(unsigned char, int , int );
+void HandleSpecialInput(int, int , int );
+void HandleSpecialUpInput(int, int , int );
 void HandleMouse(int, int, int , int );
+void HandleMouseWheel(int, int, int , int );
 void HandleMotion(int, int );
+void HandlePassiveMotion(int, int );
 
 int main(int argc, char **argv)
 {
@@ -131,8 +136,13 @@ int main(int argc, char **argv)
 	glutReshapeFunc(HandleWindowReshapeEvent);
 	glutDisplayFunc(HandleDisplayEvent);
 	glutKeyboardFunc(HandleKeyboardInput);
+	glutKeyboardUpFunc(HandleKeyboardUpInput);
+	glutSpecialFunc(HandleSpecialInput);
+	glutSpecialUpFunc(HandleSpecialUpInput);
 	glutMouseFunc(HandleMouse);
+	glutMouseWheelFunc(HandleMouseWheel);
 	glutMotionFunc(HandleMotion);
+	glutPassiveMotionFunc(HandlePassiveMotion);
 
 	/* 5. ImGui 컨텍스트 초기화 */
 
@@ -200,11 +210,37 @@ void HandleKeyboardInput(unsigned char key, int x, int y)
 	glutPostRedisplay();
 }
 
+void HandleKeyboardUpInput(unsigned char key, int x, int y)
+{
+	Metahuman::UIKeyboardUpInput(key, x, y);
+	glutPostRedisplay();
+}
+
+void HandleSpecialInput(int key, int x, int y)
+{
+	Metahuman::UISpecialInput(key, x, y);
+	glutPostRedisplay();
+}
+
+void HandleSpecialUpInput(int key, int x, int y)
+{
+	Metahuman::UISpecialUpInput(key, x, y);
+	glutPostRedisplay();
+}
+
 void HandleMouse(int button, int state, int x, int y)
 {
 	Metahuman::UIMouse(button, state, x, y);
-	if (!ImGui::GetIO().WantCaptureMouse)
+	if (!ImGui::GetIO().WantCaptureMouse || state == GLUT_UP)
 		mouse.HandleMouse(button, state, x, y);
+	else
+		mouse.CancelDrag();
+	glutPostRedisplay();
+}
+
+void HandleMouseWheel(int button, int dir, int x, int y)
+{
+	Metahuman::UIMouseWheel(button, dir, x, y);
 	glutPostRedisplay();
 }
 
@@ -213,5 +249,13 @@ void HandleMotion(int x, int y)
 	Metahuman::UIMotion(x, y);
 	if (!ImGui::GetIO().WantCaptureMouse)
 		mouse.HandleMotion(x, y);
+	else
+		mouse.CancelDrag();
+	glutPostRedisplay();
+}
+
+void HandlePassiveMotion(int x, int y)
+{
+	Metahuman::UIMotion(x, y);
 	glutPostRedisplay();
 }
