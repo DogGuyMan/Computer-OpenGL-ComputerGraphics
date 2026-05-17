@@ -148,12 +148,14 @@ int main(int argc, char **argv)
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_FACE);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_BODY);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_HAT);
-	AddModel(ModelType::KeroroHead, 0);
-	AddModel(ModelType::KeroroBody, 1);
-	AddModel(ModelType::KeroroHat, 2);
 	g_selectedModelIndex = 0;
 	if (!LoadSceneState(SCENE::SCENE_SAVE_PATH))
+	{
 		g_saveStatus = 0;
+		AddModel(ModelType::KeroroHead, 0); // 디폴트로 만들어져야 하는것.
+		AddModel(ModelType::KeroroBody, 1); // 디폴트로 만들어져야 하는것.
+		AddModel(ModelType::KeroroHat, 2); // 디폴트로 만들어져야 하는것.
+	}
 
 	g_addModelId = MakeDefaultModelId();
 
@@ -234,7 +236,7 @@ void HandleDisplayEvent()
 		// Model은 ITransformable이므로 캐스트 없이 전달
 		if (model)
 			UITransformPanel(UI::PANEL::TRANSFORM, *model,
-			                            g_selectedModelIndex, modelLabels);
+			                 g_selectedModelIndex, modelLabels);
 		// UV / Parametric / Hyperboloid는 해당 인터페이스를 구현하는 모델에만 노출
 		if (auto *uvt = dynamic_cast<IUVTransformable *>(model))
 			UIUVPanel(UI::PANEL::UV, *uvt);
@@ -245,9 +247,9 @@ void HandleDisplayEvent()
 
 		// 런타임중 모델 추가.
 		if (UIModelAddPanel(
-			UI::PANEL::MODELS,
-			MODEL::MODEL_TYPES,
-			(int)(sizeof(MODEL::MODEL_TYPES) / sizeof(MODEL::MODEL_TYPES[0])),
+		        UI::PANEL::MODELS,
+		        MODEL::MODEL_TYPES,
+		        (int)(sizeof(MODEL::MODEL_TYPES) / sizeof(MODEL::MODEL_TYPES[0])),
 		        g_addModelTypeIndex, g_addModelId))
 		{
 			const ModelType type = ModelTypeFromIndex(g_addModelTypeIndex);
@@ -278,18 +280,33 @@ const char *GetModelTypeLabel(ModelType type)
 {
 	switch (type)
 	{
-	case ModelType::KeroroHead: return MODEL::KERORO_HEAD;
-	case ModelType::KeroroBody: return MODEL::KERORO_BODY;
-	case ModelType::KeroroHat:  return MODEL::KERORO_HAT;
+	case ModelType::KeroroHead:
+		return MODEL::KERORO_HEAD;
+	case ModelType::KeroroBody:
+		return MODEL::KERORO_BODY;
+	case ModelType::KeroroHat:
+		return MODEL::KERORO_HAT;
 	}
 	return MODEL::UNKNOWN;
 }
 
 bool TryParseModelType(const char *label, ModelType &type)
 {
-	if (strcmp(label, MODEL::KERORO_HEAD) == 0) { type = ModelType::KeroroHead; return true; }
-	if (strcmp(label, MODEL::KERORO_BODY) == 0) { type = ModelType::KeroroBody; return true; }
-	if (strcmp(label, MODEL::KERORO_HAT)  == 0) { type = ModelType::KeroroHat;  return true; }
+	if (strcmp(label, MODEL::KERORO_HEAD) == 0)
+	{
+		type = ModelType::KeroroHead;
+		return true;
+	}
+	if (strcmp(label, MODEL::KERORO_BODY) == 0)
+	{
+		type = ModelType::KeroroBody;
+		return true;
+	}
+	if (strcmp(label, MODEL::KERORO_HAT) == 0)
+	{
+		type = ModelType::KeroroHat;
+		return true;
+	}
 	return false;
 }
 
@@ -326,18 +343,15 @@ bool AddModel(ModelType type, int id)
 	{
 	case ModelType::KeroroHead:
 		renderer.AddModel(make_unique<KeroroHead>(
-			g_rm.textures[TEXTURE::TEX_KERORO_FACE].get()
-		));
+		    g_rm.textures[TEXTURE::TEX_KERORO_FACE].get()));
 		break;
 	case ModelType::KeroroBody:
 		renderer.AddModel(make_unique<KeroroBody>(
-			g_rm.textures[TEXTURE::TEX_KERORO_BODY].get()
-		));
+		    g_rm.textures[TEXTURE::TEX_KERORO_BODY].get()));
 		break;
 	case ModelType::KeroroHat:
 		renderer.AddModel(make_unique<KeroroHat>(
-			g_rm.textures[TEXTURE::TEX_KERORO_HAT].get()
-		));
+		    g_rm.textures[TEXTURE::TEX_KERORO_HAT].get()));
 		break;
 	}
 
@@ -345,10 +359,6 @@ bool AddModel(ModelType type, int id)
 	g_selectedModelIndex = (int)renderer.GetModelCount() - 1;
 	return true;
 }
-
-
-
-
 
 bool AddModelState(const SceneModelState &state)
 {
