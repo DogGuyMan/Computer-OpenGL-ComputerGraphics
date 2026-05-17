@@ -140,7 +140,9 @@ int main(int argc, char **argv)
 	glutSpecialFunc(HandleSpecialInput);
 	glutSpecialUpFunc(HandleSpecialUpInput);
 	glutMouseFunc(HandleMouse);
+#ifndef __APPLE__
 	glutMouseWheelFunc(HandleMouseWheel);
+#endif
 	glutMotionFunc(HandleMotion);
 	glutPassiveMotionFunc(HandlePassiveMotion);
 

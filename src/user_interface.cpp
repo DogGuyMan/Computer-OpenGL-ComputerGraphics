@@ -174,7 +174,9 @@ void Metahuman::UIMouse(int button, int state, int x, int y)
 
 void Metahuman::UIMouseWheel(int button, int dir, int x, int y)
 {
+	#ifndef __APPLE__
 	ImGui_ImplGLUT_MouseWheelFunc(button, dir, x, y);
+	#endif
 }
 
 void Metahuman::UIMotion(int x, int y) 
