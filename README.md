@@ -11,6 +11,8 @@
 #### 추가 레퍼런스 이미지 
 [📁 docs/metahuman](https://github.com/DogGuyMan/Computer-OpenGL-ComputerGraphics/tree/main/docs/metahuman)
 
+#### [보고서](./docs/보고서/메타휴먼발표자료.md)
+
 #### 우선순위
 
 

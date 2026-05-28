@@ -176,10 +176,10 @@ int main(int argc, char **argv)
 	// 스카이박스 이미지 6장 로드 및 적용
 	Texture* texNX = g_rm.LoadTexture(SCENE::SKYBOX_PATH[0]);
 	Texture* texNY = g_rm.LoadTexture(SCENE::SKYBOX_PATH[4]);
-	Texture* texNZ = g_rm.LoadTexture(SCENE::SKYBOX_PATH[2]);
+	Texture* texNZ = g_rm.LoadTexture(SCENE::SKYBOX_PATH[5]);
 	Texture* texPX = g_rm.LoadTexture(SCENE::SKYBOX_PATH[3]);
 	Texture* texPY = g_rm.LoadTexture(SCENE::SKYBOX_PATH[1]);
-	Texture* texPZ = g_rm.LoadTexture(SCENE::SKYBOX_PATH[5]);
+	Texture* texPZ = g_rm.LoadTexture(SCENE::SKYBOX_PATH[2]);
 
 	g_skybox.SetTextures(
 	    texPX ? texPX->GetTextureID() : 0, texNX ? texNX->GetTextureID() : 0,
