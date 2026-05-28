@@ -33,7 +33,7 @@ namespace Metahuman
 	};
 
 	// 1-sheet hyperboloid 형상 파라미터 (Paul Bourke, paulbourke.net/geometry/hyperboloid)
-	//   단면 반경 r(s) = radius · √(shape² + s²) / √(shape² + 1)
+	//   단면 반경 r(s) = radius · \sqrt(shape^2 + s^2) / \sqrt(shape^2 + 1)
 	//   shape(=d) -> 0: 이중원뿔,  shape : 원기둥에 수렴
 	struct HyperboloidValue
 	{

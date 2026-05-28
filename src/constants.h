@@ -4,7 +4,8 @@ namespace Metahuman
 	{
 		static const char *TEX_KERORO_FACE = "resources/textures/KeroroFace.png";
 		static const char *TEX_KERORO_BODY = "resources/textures/KeroroBody.png";
-		static const char *TEX_KERORO_HAT  = "resources/textures/KeroroHat_c.png";
+		static const char *TEX_KERORO_HAT  = "resources/textures/KeroroHat.png";
+		static const char *TEX_KERORO_SKIN  = "resources/textures/KeroroSkin.png";
 	}
 
 	namespace SCENE
@@ -17,8 +18,9 @@ namespace Metahuman
 		static const char *const KERORO_HEAD = "KeroroHead";
 		static const char *const KERORO_BODY = "KeroroBody";
 		static const char *const KERORO_HAT  = "KeroroHat";
+		static const char *const KERORO_HAND = "KeroroHand";
 		static const char *const UNKNOWN     = "Unknown";
-		static const char *const MODEL_TYPES[] = {KERORO_HEAD, KERORO_BODY, KERORO_HAT};
+		static const char *const MODEL_TYPES[] = {KERORO_HEAD, KERORO_BODY, KERORO_HAT, KERORO_HAND};
 	}
 
 	namespace APP

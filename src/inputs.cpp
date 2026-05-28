@@ -7,7 +7,8 @@
 
 using namespace Metahuman;
 
-KeybaordInput::KeybaordInput() : keyBindedActions{} {
+KeybaordInput::KeybaordInput() : keyBindedActions {}
+{
 }
 
 KeybaordInput::~KeybaordInput() {

@@ -17,6 +17,7 @@
 #include "renderer.h"
 #include "transformable.h"
 #include "user_interface.h"
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdio>
@@ -50,7 +51,8 @@ namespace
 	{
 		KeroroHead,
 		KeroroBody,
-		KeroroHat
+		KeroroHat,
+		KeroroHand
 	};
 
 	struct ModelMeta
@@ -78,6 +80,25 @@ namespace
 	int g_addModelTypeIndex = 0;
 	int g_addModelId = 0;
 	int g_saveStatus = -1;
+
+	// 실행 위치(cwd)와 무관하게 프로젝트 소스 루트의 원본 json을 가리키도록 절대 경로 계산
+	const char* GetSceneSavePath()
+	{
+#ifdef __APPLE__
+		static std::string path = []() {
+			std::string file_path = __FILE__;
+			size_t pos = file_path.find("apps/main.cpp");
+			if (pos == std::string::npos) pos = file_path.find("apps\\main.cpp");
+			if (pos != std::string::npos) {
+				return file_path.substr(0, pos) + "resources/scene_state.json";
+			}
+			return std::string("resources/scene_state.json");
+		}();
+		return path.c_str();
+#else
+		return "resources/scene_state.json";
+#endif
+	}
 
 } // namespace
 
@@ -148,13 +169,15 @@ int main(int argc, char **argv)
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_FACE);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_BODY);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_HAT);
+	g_rm.LoadTexture(TEXTURE::TEX_KERORO_SKIN);
 	g_selectedModelIndex = 0;
-	if (!LoadSceneState(SCENE::SCENE_SAVE_PATH))
+	if (!LoadSceneState(GetSceneSavePath()))
 	{
 		g_saveStatus = 0;
 		AddModel(ModelType::KeroroHead, 0); // 디폴트로 만들어져야 하는것.
 		AddModel(ModelType::KeroroBody, 1); // 디폴트로 만들어져야 하는것.
-		AddModel(ModelType::KeroroHat, 2); // 디폴트로 만들어져야 하는것.
+		AddModel(ModelType::KeroroHand, 3); // 손이 Hat보다 먼저 그려져야 함
+		AddModel(ModelType::KeroroHat, 2);  // 투명 오브젝트는 가장 마지막에 렌더링
 	}
 
 	g_addModelId = MakeDefaultModelId();
@@ -256,12 +279,12 @@ void HandleDisplayEvent()
 			if (AddModel(type, g_addModelId))
 				g_addModelId = MakeDefaultModelId();
 		}
-		const bool saveRequested = UIScenePanel(UI::PANEL::SCENE, SCENE::SCENE_SAVE_PATH, g_saveStatus);
+		const bool saveRequested = UIScenePanel(UI::PANEL::SCENE, GetSceneSavePath(), g_saveStatus);
 		UIEndFrame();
 
 		// 패널이 모델을 직접 mutate하므로 별도 "적용" 단계는 불필요.
 		if (saveRequested)
-			g_saveStatus = SaveSceneState(SCENE::SCENE_SAVE_PATH) ? 1 : 0;
+			g_saveStatus = SaveSceneState(GetSceneSavePath()) ? 1 : 0;
 	}
 
 	glutSwapBuffers();
@@ -269,10 +292,14 @@ void HandleDisplayEvent()
 
 ModelType ModelTypeFromIndex(int index)
 {
+	if (index == 0)
+		return ModelType::KeroroHead;
 	if (index == 1)
 		return ModelType::KeroroBody;
 	if (index == 2)
 		return ModelType::KeroroHat;
+	if (index == 3)
+		return ModelType::KeroroHand;
 	return ModelType::KeroroHead;
 }
 
@@ -286,6 +313,8 @@ const char *GetModelTypeLabel(ModelType type)
 		return MODEL::KERORO_BODY;
 	case ModelType::KeroroHat:
 		return MODEL::KERORO_HAT;
+	case ModelType::KeroroHand:
+		return MODEL::KERORO_HAND;
 	}
 	return MODEL::UNKNOWN;
 }
@@ -305,6 +334,11 @@ bool TryParseModelType(const char *label, ModelType &type)
 	if (strcmp(label, MODEL::KERORO_HAT) == 0)
 	{
 		type = ModelType::KeroroHat;
+		return true;
+	}
+	if (strcmp(label, MODEL::KERORO_HAND) == 0)
+	{
+		type = ModelType::KeroroHand;
 		return true;
 	}
 	return false;
@@ -353,6 +387,12 @@ bool AddModel(ModelType type, int id)
 		renderer.AddModel(make_unique<KeroroHat>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_HAT].get()));
 		break;
+	case ModelType::KeroroHand:
+		renderer.AddModel(make_unique<KeroroHand>(
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 0));
+		renderer.AddModel(make_unique<KeroroHand>(
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 1));
+		break;
 	}
 
 	g_modelMetas.push_back({id, type});
@@ -396,6 +436,7 @@ bool LoadSceneState(const char *path)
 
 	int selectedModelIndex = 0;
 	SceneModelState current{};
+	std::vector<SceneModelState> loadedStates;
 	bool readingModel = false;
 	bool inTransform = false;
 	bool inUv = false;
@@ -519,14 +560,24 @@ bool LoadSceneState(const char *path)
 
 		if (line.rfind("    }", 0) == 0)
 		{
-			if (!AddModelState(current))
-				return false;
+			loadedStates.push_back(current);
 			readingModel = false;
 			inTransform = false;
 			inUv = false;
 			inParametric = false;
 			inHyperboloid = false;
 		}
+	}
+
+	// 투명한 Hat 모델이 가장 마지막에 그려지도록 정렬 (Depth 정렬 문제 해결)
+	std::stable_sort(loadedStates.begin(), loadedStates.end(), [](const SceneModelState &a, const SceneModelState &b) {
+		return (a.meta.type != ModelType::KeroroHat) && (b.meta.type == ModelType::KeroroHat);
+	});
+
+	for (const auto &state : loadedStates)
+	{
+		if (!AddModelState(state))
+			return false;
 	}
 
 	if (renderer.GetModelCount() == 0)
