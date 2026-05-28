@@ -17,19 +17,15 @@
 
 
 1. [ ] 케로로 모델 (얼굴, 몸통, 팔 다리) -> 여기만 해도 과제 제출 용 최소 구현
-2. [ ] Skybox 배경, 바닥
-3. [ ] Ramp Cartoon Rendering & Back Face Culling + Inverted Hull Outline
-4. [ ] 벙어리 손 구체화?
+2. [x] Skybox 배경, 바닥
+3. [x] 벙어리 손 구체화?
+4. [ ] Ramp Cartoon Rendering & Back Face Culling + Inverted Hull Outline
 
 ### 결과
 
 <div align=center>
-    <img src="image/스크린샷 2026-05-16 15.08.34.png" width="80%">
-    <h5>머리</h5>
-    <img src="image/스크린샷 2026-05-16 15.09.38.png" width="80%">
-    <h5>몸통</h5>
-    <img src="image/2026-05-16-15-41-58.png" width="80%">
-    <h5>모자 (쌍곡면)</h5>
+    <img src="image/2026-05-29-00-20-36.png" width="80%">
+    <h5>스카이박스와 손</h5>
 </div>
 
 ---
