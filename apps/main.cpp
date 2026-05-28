@@ -14,6 +14,7 @@
 #include "inputs.h"
 #include "model.h"
 #include "model_imp.h"
+#include "skybox.h"
 #include "renderer.h"
 #include "transformable.h"
 #include "user_interface.h"
@@ -38,6 +39,7 @@ namespace
 	KeybaordInput input;
 	MouseInput mouse;
 	Renderer renderer;
+	Skybox g_skybox;
 
 	struct AppConfig
 	{
@@ -170,6 +172,21 @@ int main(int argc, char **argv)
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_BODY);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_HAT);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_SKIN);
+
+	// 스카이박스 이미지 6장 로드 및 적용
+	Texture* texNX = g_rm.LoadTexture(SCENE::SKYBOX_PATH[0]);
+	Texture* texNY = g_rm.LoadTexture(SCENE::SKYBOX_PATH[4]);
+	Texture* texNZ = g_rm.LoadTexture(SCENE::SKYBOX_PATH[2]);
+	Texture* texPX = g_rm.LoadTexture(SCENE::SKYBOX_PATH[3]);
+	Texture* texPY = g_rm.LoadTexture(SCENE::SKYBOX_PATH[1]);
+	Texture* texPZ = g_rm.LoadTexture(SCENE::SKYBOX_PATH[5]);
+
+	g_skybox.SetTextures(
+	    texPX ? texPX->GetTextureID() : 0, texNX ? texNX->GetTextureID() : 0,
+	    texPY ? texPY->GetTextureID() : 0, texNY ? texNY->GetTextureID() : 0,
+	    texPZ ? texPZ->GetTextureID() : 0, texNZ ? texNZ->GetTextureID() : 0
+	);
+
 	g_selectedModelIndex = 0;
 	if (!LoadSceneState(GetSceneSavePath()))
 	{
@@ -229,6 +246,10 @@ void HandleDisplayEvent()
 	// 매 프레임 투영 갱신 (FOV 변경 반영)
 	camera.ApplyProjection((float)display.GetAspectRatio());
 	camera.ApplyView();
+
+	// 모든 투명/불투명 오브젝트를 그리기 전, 가장 뒷배경에 스카이박스를 먼저 그립니다.
+	g_skybox.Draw();
+
 	renderer.Render(camera);
 
 	// UI 한 프레임: Begin -> 패널들 -> End

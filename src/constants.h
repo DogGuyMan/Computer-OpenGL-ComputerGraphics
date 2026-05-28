@@ -11,6 +11,14 @@ namespace Metahuman
 	namespace SCENE
 	{
 		static const char *const SCENE_SAVE_PATH = "resources/scene_state.json";
+		static const char* SKYBOX_PATH[6] = {
+			"resources/textures/skybox/space_NX.png",
+			"resources/textures/skybox/space_NY.png",
+			"resources/textures/skybox/space_NZ.png",
+			"resources/textures/skybox/space_PX.png",
+			"resources/textures/skybox/space_PY.png",
+			"resources/textures/skybox/space_PZ.png"
+		};
 	}
 
 	namespace MODEL
