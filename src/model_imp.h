@@ -332,16 +332,19 @@ namespace Metahuman
 
 			gluCylinder(quadric, 1.0, 1.0, 1.0, slices, stacks);
 
+			GLdouble topHemisphere[] = {0, 0, 1, 0};
+			GLdouble botHemisphere[] = {0, 0, -1, 0};
+
 			glPushMatrix();
 			glTranslated(0.0, 0.0, 1.0);
-			glClipPlane(GL_CLIP_PLANE0, (GLdouble[]){0, 0, 1, 0}); // z>=0만 통과
+			glClipPlane(GL_CLIP_PLANE0, topHemisphere);
 			glEnable(GL_CLIP_PLANE0);
 			gluSphere(quadric, 1.0, slices, stacks);
 			glDisable(GL_CLIP_PLANE0);
 			glPopMatrix();
 
 			glPushMatrix();
-			glClipPlane(GL_CLIP_PLANE0, (GLdouble[]){0, 0, -1, 0}); // z<=0만 통과
+			glClipPlane(GL_CLIP_PLANE0, botHemisphere);
 			glEnable(GL_CLIP_PLANE0);
 			gluSphere(quadric, 1.0, slices, stacks / 2);
 			glDisable(GL_CLIP_PLANE0);
