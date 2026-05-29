@@ -23,9 +23,10 @@
 
 ### 결과
 
+
 <div align=center>
-    <img src="image/2026-05-29-00-20-36.png" width="80%">
-    <h5>스카이박스와 손</h5>
+    <img src="image/스크린샷 2026-05-29 23.18.45.png" width="100%">
+    <h5>결과</h5>
 </div>
 
 ---
