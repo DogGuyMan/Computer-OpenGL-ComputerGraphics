@@ -6,6 +6,7 @@ namespace Metahuman
 		static const char *TEX_KERORO_BODY = "resources/textures/KeroroBody.png";
 		static const char *TEX_KERORO_SKIN  = "resources/textures/KeroroSkin.png";
 		static const char *TEX_KERORO_HAT  = "resources/textures/KeroroHat.png";
+		static const char *TEX_TERRAIN     = "resources/textures/terrain.jpg";
 	}
 
 	namespace SCENE
