@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "selectedModelIndex": 10,
+  "selectedModelIndex": 4,
   "models": [
     {
       "index": 0,
@@ -72,9 +72,9 @@
       "id": 4,
       "type": "KeroroFoot",
       "transform": {
-        "translate": [-0.25, -2.3, 0.1],
-        "rotateDeg": [0, 0, -5],
-        "scale": [0.11, 0.06, 0.15]
+        "translate": [-0.25, -2.325, 0.085],
+        "rotateDeg": [0, -16, -5],
+        "scale": [0.08, 0.06, 0.15]
       },
       "uv": {
         "offset": [0, 0],
@@ -87,9 +87,9 @@
       "id": 5,
       "type": "KeroroFoot",
       "transform": {
-        "translate": [0.25, -2.3, 0.1],
-        "rotateDeg": [0, 0, 5],
-        "scale": [0.11, 0.06, 0.15]
+        "translate": [0.25, -2.325, 0.085],
+        "rotateDeg": [0, 16, 5],
+        "scale": [0.08, 0.06, 0.15]
       },
       "uv": {
         "offset": [0, 0],
@@ -132,8 +132,8 @@
       "id": 8,
       "type": "KeroroHand",
       "transform": {
-        "translate": [-1, -1.5, 0],
-        "rotateDeg": [0, -180, -151],
+        "translate": [-1, -1.4, 0],
+        "rotateDeg": [0, -180, -120],
         "scale": [1, 1, 1]
       },
       "uv": {
@@ -147,8 +147,8 @@
       "id": 9,
       "type": "KeroroHand",
       "transform": {
-        "translate": [1, -1.5, 0],
-        "rotateDeg": [0, 0, -151],
+        "translate": [1, -1.4, 0],
+        "rotateDeg": [0, 0, -120],
         "scale": [1, 1, 1]
       },
       "uv": {

@@ -2,6 +2,13 @@
 #define _USE_MATH_DEFINES
 #endif
 
+// ImGui 활성/비활성 토글
+//   1 = ImGui UI 패널 + 입력 캡처 사용 (기본)
+//   0 = ImGui 완전 비활성화
+#ifndef ENABLE_IMGUI
+#define ENABLE_IMGUI 1
+#endif
+
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
@@ -43,6 +50,7 @@ namespace
 	Renderer renderer;
 	Skybox g_skybox;
 	Ground g_ground;
+	Ground g_ground2;
 	Lighting g_lighting;
 
 	struct AppConfig
@@ -130,7 +138,9 @@ void InitApplication(int &argc, char **argv, const AppConfig &cfg)
 	glClearColor(cfg.clearColor[0], cfg.clearColor[1],
 	             cfg.clearColor[2], cfg.clearColor[3]);
 	g_lighting.Init();
+#if ENABLE_IMGUI
 	InitImgui();
+#endif
 }
 
 void QuitApplication()
@@ -183,7 +193,10 @@ int main(int argc, char **argv)
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_HAT);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_SKIN);
 	Texture *terrain = g_rm.LoadTexture(TEXTURE::TEX_TERRAIN);
+	Texture *terrain2 = g_rm.LoadTexture(TEXTURE::TEX_TERRAIN2);
 	g_ground.SetTexture(terrain ? terrain->GetTextureID() : 0);
+	g_ground2.SetY(-2.5);
+	g_ground2.SetTexture(terrain2 ? terrain2->GetTextureID() : 0);
 
 	// 스카이박스 이미지 6장 로드 및 적용
 	Texture *texPX = g_rm.LoadTexture(SCENE::SKYBOX_PATH[3]);
@@ -255,7 +268,9 @@ int main(int argc, char **argv)
 void HandleWindowReshapeEvent(int w, int h)
 {
 	display.Reshape(w, h, camera);
+#if ENABLE_IMGUI
 	UIReshape(w, h);
+#endif
 	glutPostRedisplay();
 }
 
@@ -269,11 +284,13 @@ void HandleDisplayEvent()
 	// 모든 투명/불투명 오브젝트를 그리기 전, 가장 뒷배경에 스카이박스를 먼저 그립니다.
 	g_skybox.Draw();
 	g_ground.Draw();
+	g_ground2.Draw();
 	g_lighting.ApplySunLight();
 	g_lighting.ApplyPointLight((float)glutGet(GLUT_ELAPSED_TIME) * 0.001f);
 
 	renderer.Render(camera);
 
+#if ENABLE_IMGUI
 	// UI 한 프레임: Begin -> 패널들 -> End
 	const int modelCount = (int)renderer.GetModelCount();
 	if (modelCount > 0)
@@ -330,6 +347,7 @@ void HandleDisplayEvent()
 		if (saveRequested)
 			g_saveStatus = SaveSceneState(GetSceneSavePath()) ? 1 : 0;
 	}
+#endif
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -807,58 +825,80 @@ bool SaveSceneState(const char *path)
 
 void HandleKeyboardInput(unsigned char key, int x, int y)
 {
+#if ENABLE_IMGUI
 	UIKeyboardInput(key, x, y);
 	if (!ImGui::GetIO().WantCaptureKeyboard)
 		input.Dispatch(key);
+#else
+	input.Dispatch(key);
+#endif
 	glutPostRedisplay();
 }
 
 void HandleKeyboardUpInput(unsigned char key, int x, int y)
 {
+#if ENABLE_IMGUI
 	UIKeyboardUpInput(key, x, y);
+#endif
 	glutPostRedisplay();
 }
 
 void HandleSpecialInput(int key, int x, int y)
 {
+#if ENABLE_IMGUI
 	UISpecialInput(key, x, y);
+#endif
 	glutPostRedisplay();
 }
 
 void HandleSpecialUpInput(int key, int x, int y)
 {
+#if ENABLE_IMGUI
 	UISpecialUpInput(key, x, y);
+#endif
 	glutPostRedisplay();
 }
 
 void HandleMouse(int button, int state, int x, int y)
 {
+#if ENABLE_IMGUI
 	UIMouse(button, state, x, y);
 	if (!ImGui::GetIO().WantCaptureMouse || state == GLUT_UP)
 		mouse.HandleMouse(button, state, x, y);
 	else
 		mouse.CancelDrag();
+#else
+	mouse.HandleMouse(button, state, x, y);
+#endif
 	glutPostRedisplay();
 }
 
 void HandleMouseWheel(int button, int dir, int x, int y)
 {
+#if ENABLE_IMGUI
 	UIMouseWheel(button, dir, x, y);
+#endif
 	glutPostRedisplay();
 }
 
 void HandleMotion(int x, int y)
 {
+#if ENABLE_IMGUI
 	UIMotion(x, y);
 	if (!ImGui::GetIO().WantCaptureMouse)
 		mouse.HandleMotion(x, y);
 	else
 		mouse.CancelDrag();
+#else
+	mouse.HandleMotion(x, y);
+#endif
 	glutPostRedisplay();
 }
 
 void HandlePassiveMotion(int x, int y)
 {
+#if ENABLE_IMGUI
 	UIMotion(x, y);
+#endif
 	glutPostRedisplay();
 }

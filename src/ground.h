@@ -19,6 +19,9 @@ namespace Metahuman
 	  public:
 		void SetTexture(GLuint texture);
 		void Draw() const;
+		void SetY(float newy)  {
+			y = newy;
+		}
 	};
 } // namespace Metahuman
 
