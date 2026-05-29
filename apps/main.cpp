@@ -14,8 +14,8 @@
 #include "inputs.h"
 #include "model.h"
 #include "model_imp.h"
-#include "skybox.h"
 #include "renderer.h"
+#include "skybox.h"
 #include "transformable.h"
 #include "user_interface.h"
 #include <algorithm>
@@ -53,8 +53,8 @@ namespace
 	{
 		KeroroHead,
 		KeroroBody,
-		KeroroHat,
-		KeroroHand
+		KeroroHand,
+		KeroroHat
 	};
 
 	struct ModelMeta
@@ -84,14 +84,16 @@ namespace
 	int g_saveStatus = -1;
 
 	// 실행 위치(cwd)와 무관하게 프로젝트 소스 루트의 원본 json을 가리키도록 절대 경로 계산
-	const char* GetSceneSavePath()
+	const char *GetSceneSavePath()
 	{
 #ifdef __APPLE__
 		static std::string path = []() {
 			std::string file_path = __FILE__;
 			size_t pos = file_path.find("apps/main.cpp");
-			if (pos == std::string::npos) pos = file_path.find("apps\\main.cpp");
-			if (pos != std::string::npos) {
+			if (pos == std::string::npos)
+				pos = file_path.find("apps\\main.cpp");
+			if (pos != std::string::npos)
+			{
 				return file_path.substr(0, pos) + "resources/scene_state.json";
 			}
 			return std::string("resources/scene_state.json");
@@ -141,7 +143,7 @@ void HandlePassiveMotion(int, int);
 ModelType ModelTypeFromIndex(int index);
 const char *GetModelTypeLabel(ModelType type);
 bool TryParseModelType(const char *label, ModelType &type);
-bool AddModel(ModelType type, int id);
+bool AddModel(ModelType type, int id, int variant = 0);
 bool IsModelIdUsed(int id);
 int MakeDefaultModelId();
 void MakeModelLabel(const ModelMeta &meta, char *buffer, size_t bufferSize);
@@ -174,27 +176,28 @@ int main(int argc, char **argv)
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_SKIN);
 
 	// 스카이박스 이미지 6장 로드 및 적용
-	Texture* texNX = g_rm.LoadTexture(SCENE::SKYBOX_PATH[0]);
-	Texture* texNY = g_rm.LoadTexture(SCENE::SKYBOX_PATH[4]);
-	Texture* texNZ = g_rm.LoadTexture(SCENE::SKYBOX_PATH[5]);
-	Texture* texPX = g_rm.LoadTexture(SCENE::SKYBOX_PATH[3]);
-	Texture* texPY = g_rm.LoadTexture(SCENE::SKYBOX_PATH[1]);
-	Texture* texPZ = g_rm.LoadTexture(SCENE::SKYBOX_PATH[2]);
+	Texture *texNX = g_rm.LoadTexture(SCENE::SKYBOX_PATH[0]);
+	Texture *texNY = g_rm.LoadTexture(SCENE::SKYBOX_PATH[4]);
+	Texture *texNZ = g_rm.LoadTexture(SCENE::SKYBOX_PATH[5]);
+	Texture *texPX = g_rm.LoadTexture(SCENE::SKYBOX_PATH[3]);
+	Texture *texPY = g_rm.LoadTexture(SCENE::SKYBOX_PATH[1]);
+	Texture *texPZ = g_rm.LoadTexture(SCENE::SKYBOX_PATH[2]);
 
 	g_skybox.SetTextures(
 	    texPX ? texPX->GetTextureID() : 0, texNX ? texNX->GetTextureID() : 0,
 	    texPY ? texPY->GetTextureID() : 0, texNY ? texNY->GetTextureID() : 0,
-	    texPZ ? texPZ->GetTextureID() : 0, texNZ ? texNZ->GetTextureID() : 0
-	);
+	    texPZ ? texPZ->GetTextureID() : 0, texNZ ? texNZ->GetTextureID() : 0);
 
 	g_selectedModelIndex = 0;
 	if (!LoadSceneState(GetSceneSavePath()))
 	{
 		g_saveStatus = 0;
-		AddModel(ModelType::KeroroHead, 0); // 디폴트로 만들어져야 하는것.
-		AddModel(ModelType::KeroroBody, 1); // 디폴트로 만들어져야 하는것.
-		AddModel(ModelType::KeroroHand, 3); // 손이 Hat보다 먼저 그려져야 함
-		AddModel(ModelType::KeroroHat, 2);  // 투명 오브젝트는 가장 마지막에 렌더링
+		int id = 0;
+		AddModel(ModelType::KeroroHead, id++);    // 디폴트로 만들어져야 하는것.
+		AddModel(ModelType::KeroroBody, id++);    // 디폴트로 만들어져야 하는것.
+		AddModel(ModelType::KeroroHand, id++, 0); // 왼손 (손이 Hat보다 먼저 그려져야 함)
+		AddModel(ModelType::KeroroHand, id++, 1); // 오른손
+		AddModel(ModelType::KeroroHat, id++);     // 투명 오브젝트는 가장 마지막에 렌더링
 	}
 
 	g_addModelId = MakeDefaultModelId();
@@ -352,14 +355,14 @@ bool TryParseModelType(const char *label, ModelType &type)
 		type = ModelType::KeroroBody;
 		return true;
 	}
-	if (strcmp(label, MODEL::KERORO_HAT) == 0)
-	{
-		type = ModelType::KeroroHat;
-		return true;
-	}
 	if (strcmp(label, MODEL::KERORO_HAND) == 0)
 	{
 		type = ModelType::KeroroHand;
+		return true;
+	}
+	if (strcmp(label, MODEL::KERORO_HAT) == 0)
+	{
+		type = ModelType::KeroroHat;
 		return true;
 	}
 	return false;
@@ -389,7 +392,10 @@ void MakeModelLabel(const ModelMeta &meta, char *buffer, size_t bufferSize)
 	snprintf(buffer, bufferSize, "%d [%s]", meta.id, GetModelTypeLabel(meta.type));
 }
 
-bool AddModel(ModelType type, int id)
+// variant: 같은 타입의 기본 포즈 변형 선택자(손의 좌=0/우=1 등). 생성 시점 기본 transform
+// 힌트일 뿐이며 영속적 정체성이 아니다 — 포즈의 진실은 저장/로드되는 transform이다.
+// 한 번 호출 = 모델 1개 = id 1개 (g_modelMetas와 renderer 모델 수의 1:1 불변식 유지).
+bool AddModel(ModelType type, int id, int variant)
 {
 	if (id < 0 || IsModelIdUsed(id))
 		return false;
@@ -404,15 +410,13 @@ bool AddModel(ModelType type, int id)
 		renderer.AddModel(make_unique<KeroroBody>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_BODY].get()));
 		break;
+	case ModelType::KeroroHand:
+		renderer.AddModel(make_unique<KeroroHand>(
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), variant));
+		break;
 	case ModelType::KeroroHat:
 		renderer.AddModel(make_unique<KeroroHat>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_HAT].get()));
-		break;
-	case ModelType::KeroroHand:
-		renderer.AddModel(make_unique<KeroroHand>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 0));
-		renderer.AddModel(make_unique<KeroroHand>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 1));
 		break;
 	}
 
@@ -589,11 +593,6 @@ bool LoadSceneState(const char *path)
 			inHyperboloid = false;
 		}
 	}
-
-	// 투명한 Hat 모델이 가장 마지막에 그려지도록 정렬 (Depth 정렬 문제 해결)
-	std::stable_sort(loadedStates.begin(), loadedStates.end(), [](const SceneModelState &a, const SceneModelState &b) {
-		return (a.meta.type != ModelType::KeroroHat) && (b.meta.type == ModelType::KeroroHat);
-	});
 
 	for (const auto &state : loadedStates)
 	{

@@ -63,6 +63,9 @@ namespace Metahuman
 		// 노멀은 finite difference로 계산 (퇴화 시 (0,1,0) fallback).
 		void build();
 
+		// 캐시된 정점 하나(법선+UV+위치)를 GL에 emit. Draw()의 셀 꼭짓점 출력에 재사용.
+		void emitVertex(size_t idx) const;
+
 		// 도형별 매개변수 곡면 함수. (u, v) -> (x, y, z, 1)
 		virtual glm::vec4 SurfaceFunction(double u, double v) const = 0;
 

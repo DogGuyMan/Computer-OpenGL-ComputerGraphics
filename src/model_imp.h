@@ -76,7 +76,7 @@ namespace Metahuman
 		{
 			TransformValue t;
 			t.translate = glm::vec3(0.0f, 0.0f, 0.0f);
-			t.eulerDeg = glm::vec3(90.0f, 0.0f, 0.0f);
+			t.eulerDeg = glm::vec3(90.0f, 0.0f, -47.0f);
 			t.scale = glm::vec3(1.0f, 1.0f, 0.95f);
 			return t;
 		}
@@ -157,9 +157,9 @@ namespace Metahuman
 		static TransformValue DefaultTransform()
 		{
 			TransformValue t;
-			t.translate = glm::vec3(0.0f, -1.2f, 0.0f);
-			t.eulerDeg = glm::vec3(0.0f, 0.0f, 0.0f);
-			t.scale = glm::vec3(0.7f, 0.65f, 0.7f);
+			t.translate = glm::vec3(0.0f, -1.05f, 0.0f);
+			t.eulerDeg = glm::vec3(0.0f, 45.0f, 0.0f);
+			t.scale = glm::vec3(0.7f, 0.75f, 0.7f);
 			return t;
 		}
 		static UVValue DefaultUV()
@@ -247,7 +247,7 @@ namespace Metahuman
 		{
 			TransformValue t;
 			t.translate = glm::vec3(0.0f, 0.5f, 0.0f);
-			t.eulerDeg = glm::vec3(0.0f, -173.0f, 0.0f);
+			t.eulerDeg = glm::vec3(0.0f, -124.0f, 0.0f);
 			t.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 			return t;
 		}
@@ -421,8 +421,8 @@ namespace Metahuman
 		static UVValue DefaultUV()
 		{
 			UVValue u;
-			u.offset = glm::vec2(0.0f, -0.550f);
-			u.scale = glm::vec2(3.8f, 1.95f);
+			u.offset = glm::vec2(0.0f, 0.0f);
+			u.scale = glm::vec2(1.0f, 1.0f);
 			return u;
 		}
 

@@ -130,6 +130,13 @@ namespace Metahuman
 		}
 	}
 
+	void ParametricGeometry::emitVertex(size_t idx) const
+	{
+		glNormal3fv(glm::value_ptr(normals[idx]));
+		glTexCoord2fv(glm::value_ptr(texCoords[idx]));
+		glVertex4fv(glm::value_ptr(vertices[idx]));
+	}
+
 	void ParametricGeometry::Draw()
 	{
 		recalculateModelMatrix();
@@ -138,23 +145,21 @@ namespace Metahuman
 		glMultMatrixf(glm::value_ptr(modelMatrix));
 
 		const size_t vCount = params.vRes + 1;
+
 		for (size_t i = 0; i < params.uRes; ++i)
 		{
-			glBegin(GL_QUAD_STRIP);
-			for (size_t j = 0; j <= params.vRes; ++j)
+			for (size_t j = 0; j < params.vRes; ++j)
 			{
-				const size_t idx0 = i * vCount + j;
-				const size_t idx1 = (i + 1) * vCount + j;
+				const size_t i0 = i * vCount;
+				const size_t i1 = (i + 1) * vCount;
 
-				glNormal3fv(glm::value_ptr(normals[idx0]));
-				glTexCoord2fv(glm::value_ptr(texCoords[idx0]));
-				glVertex4fv(glm::value_ptr(vertices[idx0]));
-
-				glNormal3fv(glm::value_ptr(normals[idx1]));
-				glTexCoord2fv(glm::value_ptr(texCoords[idx1]));
-				glVertex4fv(glm::value_ptr(vertices[idx1]));
+				glBegin(GL_POLYGON);
+				emitVertex(i0 + j);     // (i,   j)
+				emitVertex(i1 + j);     // (i+1, j)
+				emitVertex(i1 + j + 1); // (i+1, j+1)
+				emitVertex(i0 + j + 1); // (i,   j+1)
+				glEnd();
 			}
-			glEnd();
 		}
 
 		glPopMatrix();
@@ -163,7 +168,6 @@ namespace Metahuman
 	void ParametricGeometry::SetParametricParams(const ParametricValue &p)
 	{
 		params = p;
-		// u/v 범위·해상도가 바뀌었으니 격자 메쉬를 즉시 재생성
 		build();
 	}
 
