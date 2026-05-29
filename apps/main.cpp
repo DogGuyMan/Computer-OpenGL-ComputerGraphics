@@ -6,7 +6,7 @@
 //   1 = ImGui UI 패널 + 입력 캡처 사용 (기본)
 //   0 = ImGui 완전 비활성화
 #ifndef ENABLE_IMGUI
-#define ENABLE_IMGUI 1
+#define ENABLE_IMGUI 0
 #endif
 
 #ifdef __APPLE__

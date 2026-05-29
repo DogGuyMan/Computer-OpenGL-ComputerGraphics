@@ -89,10 +89,10 @@ namespace Metahuman
 		if (texPY != 0) {
 			glBindTexture(GL_TEXTURE_2D, texPY);
 			glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 0.0f); glVertex3f(-size, topY, -size);
-			glTexCoord2f(1.0f, 0.0f); glVertex3f(size, topY, -size);
-			glTexCoord2f(1.0f, 1.0f); glVertex3f(size, topY, size);
-			glTexCoord2f(0.0f, 1.0f); glVertex3f(-size, topY, size);
+			glTexCoord2f(1.0f, 0.0f); glVertex3f(-size, topY, -size);
+			glTexCoord2f(1.0f, 1.0f); glVertex3f(size, topY, -size);
+			glTexCoord2f(0.0f, 1.0f); glVertex3f(size, topY, size);
+			glTexCoord2f(0.0f, 0.0f); glVertex3f(-size, topY, size);
 			glEnd();
 		}
 
