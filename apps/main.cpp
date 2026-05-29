@@ -11,6 +11,7 @@
 #include "camera.h"
 #include "constants.h"
 #include "display.h"
+#include "ground.h"
 #include "inputs.h"
 #include "lighting.h"
 #include "model.h"
@@ -41,6 +42,7 @@ namespace
 	MouseInput mouse;
 	Renderer renderer;
 	Skybox g_skybox;
+	Ground g_ground;
 	Lighting g_lighting;
 
 	struct AppConfig
@@ -180,6 +182,8 @@ int main(int argc, char **argv)
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_BODY);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_HAT);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_SKIN);
+	Texture *terrain = g_rm.LoadTexture(TEXTURE::TEX_TERRAIN);
+	g_ground.SetTexture(terrain ? terrain->GetTextureID() : 0);
 
 	// 스카이박스 이미지 6장 로드 및 적용
 	Texture *texNX = g_rm.LoadTexture(SCENE::SKYBOX_PATH[0]);
@@ -264,6 +268,7 @@ void HandleDisplayEvent()
 
 	// 모든 투명/불투명 오브젝트를 그리기 전, 가장 뒷배경에 스카이박스를 먼저 그립니다.
 	g_skybox.Draw();
+	g_ground.Draw();
 	g_lighting.ApplySunLight();
 	g_lighting.ApplyPointLight((float)glutGet(GLUT_ELAPSED_TIME) * 0.001f);
 
