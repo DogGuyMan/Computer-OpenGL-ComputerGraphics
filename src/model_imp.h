@@ -315,6 +315,338 @@ namespace Metahuman
 		}
 	};
 
+	class KeroroArm : public Model, public IUVTransformable
+	{
+	  private:
+		GLUquadric *quadric = nullptr;
+		Texture *texture = nullptr;
+		UVValue uv;
+		double bodyRadius = 0.11;
+		double handRadius = 0.23;
+		double length = 1.0;
+		int slices = 32;
+		int stacks = 8;
+
+	  public:
+		KeroroArm(Texture *texture,
+		          int sides,
+		          int slices = 32,
+		          int stacks = 8)
+		    : texture(texture), slices(slices), stacks(stacks)
+		{
+			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
+			uv = DefaultUV();
+			quadric = gluNewQuadric();
+			gluQuadricDrawStyle(quadric, GLU_FILL);
+			gluQuadricNormals(quadric, GLU_SMOOTH);
+			gluQuadricTexture(quadric, GL_TRUE);
+			gluQuadricOrientation(quadric, GLU_OUTSIDE);
+		}
+
+		~KeroroArm() override
+		{
+			if (quadric)
+			{
+				gluDeleteQuadric(quadric);
+				quadric = nullptr;
+			}
+		}
+
+		virtual void SetUV(const UVValue &t) override
+		{
+			uv = t;
+		}
+		virtual const UVValue &GetUV() const override
+		{
+			return uv;
+		}
+
+		static TransformValue LeftDefaultTransform()
+		{
+			TransformValue t;
+			t.translate = glm::vec3(-0.5f, -1.1f, 0.0f);
+			t.eulerDeg = glm::vec3(0.0f, 0.0f, -145.0f);
+			t.scale = glm::vec3(1.0f, 0.5f, 0.5f);
+			return t;
+		}
+		static TransformValue RightDefaultTransform()
+		{
+			TransformValue t;
+			t.translate = glm::vec3(0.5f, -1.1f, 0.0f);
+			t.eulerDeg = glm::vec3(0.0f, 0.0f, -35.0f);
+			t.scale = glm::vec3(1.0f, 0.5f, 0.5f);
+			return t;
+		}
+
+		static UVValue DefaultUV()
+		{
+			UVValue u;
+			u.offset = glm::vec2(0.0f, 0.0f);
+			u.scale = glm::vec2(1.0f, 1.0f);
+			return u;
+		}
+
+		void Draw() override
+		{
+			recalculateModelMatrix();
+
+			glPushMatrix();
+			glMultMatrixf(glm::value_ptr(modelMatrix));
+
+			const GLuint id = texture ? texture->GetTextureID() : 0;
+			if (id != 0)
+			{
+				glEnable(GL_TEXTURE_2D);
+				glBindTexture(GL_TEXTURE_2D, id);
+
+				glMatrixMode(GL_TEXTURE);
+				glPushMatrix();
+				glLoadIdentity();
+				glTranslatef(uv.offset.x, uv.offset.y, 0.0f);
+				glRotatef(uv.rotationDeg, 0.0f, 0.0f, 1.0f);
+				glScalef(uv.scale.x, uv.scale.y, 1.0f);
+				glMatrixMode(GL_MODELVIEW);
+			}
+
+			glColor3f(1.0f, 1.0f, 1.0f);
+
+			glPushMatrix();
+			glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+			glTranslated(0.0, 0.0, -length * 0.5);
+			gluCylinder(quadric, bodyRadius, handRadius, length, slices, stacks);
+			glPopMatrix();
+
+			if (id != 0)
+			{
+				glMatrixMode(GL_TEXTURE);
+				glPopMatrix();
+				glMatrixMode(GL_MODELVIEW);
+				glDisable(GL_TEXTURE_2D);
+			}
+
+			glPopMatrix();
+		}
+	};
+
+	class KeroroLeg : public Model, public IUVTransformable
+	{
+	  private:
+		GLUquadric *quadric = nullptr;
+		Texture *texture = nullptr;
+		UVValue uv;
+		double bodyRadius = 0.30;
+		double footRadius = 0.11;
+		double length = 1.0;
+		int slices = 32;
+		int stacks = 8;
+
+	  public:
+		KeroroLeg(Texture *texture,
+		          int sides,
+		          int slices = 32,
+		          int stacks = 8)
+		    : texture(texture), slices(slices), stacks(stacks)
+		{
+			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
+			uv = DefaultUV();
+			quadric = gluNewQuadric();
+			gluQuadricDrawStyle(quadric, GLU_FILL);
+			gluQuadricNormals(quadric, GLU_SMOOTH);
+			gluQuadricTexture(quadric, GL_TRUE);
+			gluQuadricOrientation(quadric, GLU_OUTSIDE);
+		}
+
+		~KeroroLeg() override
+		{
+			if (quadric)
+			{
+				gluDeleteQuadric(quadric);
+				quadric = nullptr;
+			}
+		}
+
+		virtual void SetUV(const UVValue &t) override
+		{
+			uv = t;
+		}
+		virtual const UVValue &GetUV() const override
+		{
+			return uv;
+		}
+
+		static TransformValue LeftDefaultTransform()
+		{
+			TransformValue t;
+			t.translate = glm::vec3(-0.2f, -1.9f, 0.0f);
+			t.eulerDeg = glm::vec3(0.0f, 0.0f, -95.0f);
+			t.scale = glm::vec3(0.8f, 0.5f, 0.5f);
+			return t;
+		}
+		static TransformValue RightDefaultTransform()
+		{
+			TransformValue t;
+			t.translate = glm::vec3(0.2f, -1.9f, 0.0f);
+			t.eulerDeg = glm::vec3(0.0f, 0.0f, -85.0f);
+			t.scale = glm::vec3(0.8f, 0.5f, 0.5f);
+			return t;
+		}
+
+		static UVValue DefaultUV()
+		{
+			UVValue u;
+			u.offset = glm::vec2(0.0f, 0.0f);
+			u.scale = glm::vec2(1.0f, 1.0f);
+			return u;
+		}
+
+		void Draw() override
+		{
+			recalculateModelMatrix();
+
+			glPushMatrix();
+			glMultMatrixf(glm::value_ptr(modelMatrix));
+
+			const GLuint id = texture ? texture->GetTextureID() : 0;
+			if (id != 0)
+			{
+				glEnable(GL_TEXTURE_2D);
+				glBindTexture(GL_TEXTURE_2D, id);
+
+				glMatrixMode(GL_TEXTURE);
+				glPushMatrix();
+				glLoadIdentity();
+				glTranslatef(uv.offset.x, uv.offset.y, 0.0f);
+				glRotatef(uv.rotationDeg, 0.0f, 0.0f, 1.0f);
+				glScalef(uv.scale.x, uv.scale.y, 1.0f);
+				glMatrixMode(GL_MODELVIEW);
+			}
+
+			glColor3f(1.0f, 1.0f, 1.0f);
+
+			glPushMatrix();
+			glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+			glTranslated(0.0, 0.0, -length * 0.5);
+			gluCylinder(quadric, bodyRadius, footRadius, length, slices, stacks);
+			glPopMatrix();
+
+			if (id != 0)
+			{
+				glMatrixMode(GL_TEXTURE);
+				glPopMatrix();
+				glMatrixMode(GL_MODELVIEW);
+				glDisable(GL_TEXTURE_2D);
+			}
+
+			glPopMatrix();
+		}
+	};
+
+	class KeroroFoot : public Model, public IUVTransformable
+	{
+	  private:
+		GLUquadric *quadric = nullptr;
+		Texture *texture = nullptr;
+		UVValue uv;
+		double radius = 1.0;
+		int slices = 32;
+		int stacks = 16;
+
+	  public:
+		KeroroFoot(Texture *texture,
+		           int sides,
+		           int slices = 32,
+		           int stacks = 16)
+		    : texture(texture), slices(slices), stacks(stacks)
+		{
+			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
+			uv = DefaultUV();
+			quadric = gluNewQuadric();
+			gluQuadricDrawStyle(quadric, GLU_FILL);
+			gluQuadricNormals(quadric, GLU_SMOOTH);
+			gluQuadricTexture(quadric, GL_TRUE);
+			gluQuadricOrientation(quadric, GLU_OUTSIDE);
+		}
+
+		~KeroroFoot() override
+		{
+			if (quadric)
+			{
+				gluDeleteQuadric(quadric);
+				quadric = nullptr;
+			}
+		}
+
+		virtual void SetUV(const UVValue &t) override
+		{
+			uv = t;
+		}
+		virtual const UVValue &GetUV() const override
+		{
+			return uv;
+		}
+
+		static TransformValue LeftDefaultTransform()
+		{
+			TransformValue t;
+			t.translate = glm::vec3(-0.25f, -2.3f, 0.1f);
+			t.eulerDeg = glm::vec3(0.0f, 0.0f, -5.0f);
+			t.scale = glm::vec3(0.11f, 0.06f, 0.15f);
+			return t;
+		}
+		static TransformValue RightDefaultTransform()
+		{
+			TransformValue t;
+			t.translate = glm::vec3(0.25f, -2.3f, 0.1f);
+			t.eulerDeg = glm::vec3(0.0f, 0.0f, 5.0f);
+			t.scale = glm::vec3(0.11f, 0.06f, 0.15f);
+			return t;
+		}
+
+		static UVValue DefaultUV()
+		{
+			UVValue u;
+			u.offset = glm::vec2(0.0f, 0.0f);
+			u.scale = glm::vec2(1.0f, 1.0f);
+			return u;
+		}
+
+		void Draw() override
+		{
+			recalculateModelMatrix();
+
+			glPushMatrix();
+			glMultMatrixf(glm::value_ptr(modelMatrix));
+
+			const GLuint id = texture ? texture->GetTextureID() : 0;
+			if (id != 0)
+			{
+				glEnable(GL_TEXTURE_2D);
+				glBindTexture(GL_TEXTURE_2D, id);
+
+				glMatrixMode(GL_TEXTURE);
+				glPushMatrix();
+				glLoadIdentity();
+				glTranslatef(uv.offset.x, uv.offset.y, 0.0f);
+				glRotatef(uv.rotationDeg, 0.0f, 0.0f, 1.0f);
+				glScalef(uv.scale.x, uv.scale.y, 1.0f);
+				glMatrixMode(GL_MODELVIEW);
+			}
+
+			glColor3f(1.0f, 1.0f, 1.0f);
+			gluSphere(quadric, radius, slices, stacks);
+
+			if (id != 0)
+			{
+				glMatrixMode(GL_TEXTURE);
+				glPopMatrix();
+				glMatrixMode(GL_MODELVIEW);
+				glDisable(GL_TEXTURE_2D);
+			}
+
+			glPopMatrix();
+		}
+	};
+
 	class KeroroHand : public Model, public IUVTransformable
 	{
 	  private:
@@ -403,7 +735,7 @@ namespace Metahuman
 		static TransformValue LeftDefaultTransform()
 		{
 			TransformValue t;
-			t.translate = glm::vec3(-1.4f, -1.5f, 0.0f);
+			t.translate = glm::vec3(-1.0f, -1.5f, 0.0f);
 			t.eulerDeg = glm::vec3(0.0f, -180.0f, -151.0f);
 			t.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 			return t;
@@ -412,7 +744,7 @@ namespace Metahuman
 		static TransformValue RightDefaultTransform()
 		{
 			TransformValue t;
-			t.translate = glm::vec3(1.4f, -1.5f, 0.0f);
+			t.translate = glm::vec3(1.0f, -1.5f, 0.0f);
 			t.eulerDeg = glm::vec3(0.0f, 0.0f, -151.0f);
 			t.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 			return t;
