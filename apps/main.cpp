@@ -12,6 +12,7 @@
 #include "constants.h"
 #include "display.h"
 #include "inputs.h"
+#include "lighting.h"
 #include "model.h"
 #include "model_imp.h"
 #include "renderer.h"
@@ -40,6 +41,7 @@ namespace
 	MouseInput mouse;
 	Renderer renderer;
 	Skybox g_skybox;
+	Lighting g_lighting;
 
 	struct AppConfig
 	{
@@ -122,6 +124,7 @@ void InitApplication(int &argc, char **argv, const AppConfig &cfg)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glClearColor(cfg.clearColor[0], cfg.clearColor[1],
 	             cfg.clearColor[2], cfg.clearColor[3]);
+	g_lighting.Init();
 	InitImgui();
 }
 
@@ -252,6 +255,7 @@ void HandleDisplayEvent()
 
 	// 모든 투명/불투명 오브젝트를 그리기 전, 가장 뒷배경에 스카이박스를 먼저 그립니다.
 	g_skybox.Draw();
+	g_lighting.ApplySunLight();
 
 	renderer.Render(camera);
 

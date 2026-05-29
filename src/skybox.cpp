@@ -24,6 +24,7 @@ namespace Metahuman
 		glColor3f(1.0f, 1.0f, 1.0f);
 
 		glPushMatrix();
+		glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
 
 		float size = 15.0f;
 		float bottomY = -10.0f; // 바닥을 좀 더 깊게
