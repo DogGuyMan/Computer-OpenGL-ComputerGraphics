@@ -222,8 +222,8 @@ namespace Metahuman
 
 	  public:
 		KeroroHat(Texture *texture = nullptr,
-		          size_t uRes = 32,                     // u 분할 (수평, 경도) — 회전 부드러움
-		          size_t vRes = 16)                     // v 분할 (수직) — 프로파일 곡선
+		          size_t uRes = 64,                     // u 분할 (수평, 경도) — specular highlight가 정점에 잡히도록 촘촘히
+		          size_t vRes = 64)                     // v 분할 (수직) — 프로파일 곡선 (Gouraud specular 정밀도)
 		    : ParametricGeometry(0.0, 2.0 * M_PI, uRes, // [0, 2π]
 		                         0.06, 0.5, vRes),      // [0.06, 0.5], xz 평면 아래쪽 절반
 		      texture(texture)
@@ -303,7 +303,13 @@ namespace Metahuman
 			}
 
 			glColor3f(1.0f, 1.0f, 1.0f);
-			ParametricGeometry::Draw(); // TRS 적용 + 격자 메쉬 렌더
+			// 모자 텍스처는 알파 컷아웃(불투명 모자 + 투명 배경). blend만 쓰면 투명 텍셀(α≈0)도
+			// 깊이를 기록해, 뒤쪽 면/배경을 가려 "뻥 뚫림"이 생긴다. 알파 테스트로 투명 텍셀을
+			// 폐기하면 불투명 면만 깊이를 써서, 일반 깊이 테스트가 앞면이 뒷면을 가리도록 처리한다.
+			glEnable(GL_ALPHA_TEST);
+			glAlphaFunc(GL_GREATER, 0.9f); 
+			ParametricGeometry::Draw();    // TRS 적용 + 격자 메쉬 렌더
+			glDisable(GL_ALPHA_TEST);
 
 			if (id != 0)
 			{

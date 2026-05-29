@@ -21,8 +21,8 @@ namespace Metahuman
 {
 	struct LightingValue
 	{
-		float sunThetaDeg = 60.0f;
-		float sunPhiDeg = 128.0f;
+		float sunThetaDeg = 21.0f;
+		float sunPhiDeg = 0.f;
 		float sunAmbient[3] = {0.22f, 0.22f, 0.22f};
 		float sunDiffuse[3] = {0.88f, 0.86f, 0.80f};
 		float sunSpecular[3] = {1.0f, 1.0f, 1.0f};

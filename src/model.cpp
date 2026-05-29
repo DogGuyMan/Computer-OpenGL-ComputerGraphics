@@ -102,8 +102,8 @@ namespace Metahuman
 
 		const double du = (params.uEnd - params.uStart) / static_cast<double>(params.uRes);
 		const double dv = (params.vEnd - params.vStart) / static_cast<double>(params.vRes);
-		// finite difference 스텝 — 격자 간격의 1%면 정밀도/안정성 절충
-		const double eps = std::min(du, dv) * 0.01;
+		const double epsU = du * 0.01;
+		const double epsV = dv * 0.01;
 
 		for (size_t i = 0; i < uCount; ++i)
 		{
@@ -118,8 +118,8 @@ namespace Metahuman
 				    static_cast<float>(i) / static_cast<float>(params.uRes),
 				    static_cast<float>(j) / static_cast<float>(params.vRes));
 
-				const glm::vec4 pu = SurfaceFunction(u + eps, v);
-				const glm::vec4 pv = SurfaceFunction(u, v + eps);
+				const glm::vec4 pu = SurfaceFunction(u + epsU, v);
+				const glm::vec4 pv = SurfaceFunction(u, v + epsV);
 				const glm::vec3 dPdu = glm::vec3(pu - vertices[idx]);
 				const glm::vec3 dPdv = glm::vec3(pv - vertices[idx]);
 				const glm::vec3 cross = glm::cross(dPdu, dPdv);
