@@ -24,6 +24,7 @@ namespace Metahuman
 	  public:
 		void Init() const;
 		void ApplySunLight() const;
+		void ApplyPointLight(float elapsedSeconds) const;
 	};
 } // namespace Metahuman
 

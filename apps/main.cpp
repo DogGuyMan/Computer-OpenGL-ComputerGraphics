@@ -256,6 +256,7 @@ void HandleDisplayEvent()
 	// 모든 투명/불투명 오브젝트를 그리기 전, 가장 뒷배경에 스카이박스를 먼저 그립니다.
 	g_skybox.Draw();
 	g_lighting.ApplySunLight();
+	g_lighting.ApplyPointLight((float)glutGet(GLUT_ELAPSED_TIME) * 0.001f);
 
 	renderer.Render(camera);
 
@@ -316,6 +317,7 @@ void HandleDisplayEvent()
 	}
 
 	glutSwapBuffers();
+	glutPostRedisplay();
 }
 
 ModelType ModelTypeFromIndex(int index)
