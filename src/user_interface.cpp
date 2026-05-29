@@ -175,6 +175,33 @@ void Metahuman::UIHyperboloidPanel(const char* label, Metahuman::IHyperboloidTra
 	ImGui::End();
 }
 
+void Metahuman::UILightingPanel(const char* label, Metahuman::LightingValue& lighting)
+{
+	ImGui::Begin(label);
+
+	ImGui::TextUnformatted("Sun");
+	ImGui::DragFloat("Theta", &lighting.sunThetaDeg, 0.5f);
+	ImGui::DragFloat("Phi", &lighting.sunPhiDeg, 0.5f);
+	ImGui::ColorEdit3("Ambient", lighting.sunAmbient);
+	ImGui::ColorEdit3("Diffuse", lighting.sunDiffuse);
+	ImGui::ColorEdit3("Specular", lighting.sunSpecular);
+
+	ImGui::Separator();
+	ImGui::TextUnformatted("Material");
+	ImGui::ColorEdit3("Specular Color", lighting.materialSpecular);
+	ImGui::DragFloat("Shininess", &lighting.materialShininess, 1.0f, 0.0f, 128.0f);
+
+	ImGui::Separator();
+	ImGui::TextUnformatted("Point Light");
+	ImGui::ColorEdit3("Point Diffuse", lighting.pointDiffuse);
+	ImGui::ColorEdit3("Point Specular", lighting.pointSpecular);
+	ImGui::DragFloat("Point Radius", &lighting.pointRadius, 0.05f, 0.0f, 20.0f);
+	ImGui::DragFloat("Point Height", &lighting.pointHeight, 0.05f, -10.0f, 10.0f);
+	ImGui::DragFloat("Angular Speed", &lighting.pointAngularSpeed, 0.05f, 0.0f, 10.0f);
+
+	ImGui::End();
+}
+
 bool Metahuman::UIModelAddPanel(const char* label, const char* const* modelTypes, int modelTypeCount,
                                 int& selectedTypeIndex, int& id)
 {

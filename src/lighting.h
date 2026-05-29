@@ -19,12 +19,32 @@
 
 namespace Metahuman
 {
+	struct LightingValue
+	{
+		float sunThetaDeg = 60.0f;
+		float sunPhiDeg = 128.0f;
+		float sunAmbient[3] = {0.22f, 0.22f, 0.22f};
+		float sunDiffuse[3] = {0.88f, 0.86f, 0.80f};
+		float sunSpecular[3] = {1.0f, 1.0f, 1.0f};
+		float materialSpecular[3] = {1.0f, 1.0f, 1.0f};
+		float materialShininess = 64.0f;
+		float pointDiffuse[3] = {1.0f, 0.0f, 0.0f};
+		float pointSpecular[3] = {1.0f, 0.0f, 0.0f};
+		float pointRadius = 3.0f;
+		float pointHeight = 0.8f;
+		float pointAngularSpeed = 1.5f;
+	};
+
 	class Lighting
 	{
+	  private:
+		LightingValue value;
+
 	  public:
 		void Init() const;
 		void ApplySunLight() const;
 		void ApplyPointLight(float elapsedSeconds) const;
+		LightingValue &GetValue();
 	};
 } // namespace Metahuman
 

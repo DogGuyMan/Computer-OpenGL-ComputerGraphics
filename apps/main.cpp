@@ -296,6 +296,7 @@ void HandleDisplayEvent()
 			UIParametricPanel(UI::PANEL::PARAMETRIC, *geo);
 		if (auto *hyp = dynamic_cast<IHyperboloidTransformable *>(model))
 			UIHyperboloidPanel(UI::PANEL::HYPERBOLOID, *hyp);
+		UILightingPanel(UI::PANEL::LIGHTING, g_lighting.GetValue());
 
 		// 런타임중 모델 추가.
 		if (UIModelAddPanel(

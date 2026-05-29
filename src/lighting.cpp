@@ -7,6 +7,15 @@
 
 namespace Metahuman
 {
+	namespace
+	{
+		float WrapDegrees(float degrees)
+		{
+			const float wrapped = std::fmod(degrees, 360.0f);
+			return wrapped < 0.0f ? wrapped + 360.0f : wrapped;
+		}
+	} // namespace
+
 	void Lighting::Init() const
 	{
 		glEnable(GL_LIGHTING);
@@ -21,14 +30,14 @@ namespace Metahuman
 		glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-		const GLfloat ambient[] = {0.22f, 0.22f, 0.22f, 1.0f};
-		const GLfloat diffuse[] = {0.88f, 0.86f, 0.80f, 1.0f};
-		const GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-		const GLfloat materialSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-		const GLfloat materialShininess[] = {64.0f};
+		const GLfloat ambient[] = {value.sunAmbient[0], value.sunAmbient[1], value.sunAmbient[2], 1.0f};
+		const GLfloat diffuse[] = {value.sunDiffuse[0], value.sunDiffuse[1], value.sunDiffuse[2], 1.0f};
+		const GLfloat specular[] = {value.sunSpecular[0], value.sunSpecular[1], value.sunSpecular[2], 1.0f};
+		const GLfloat materialSpecular[] = {value.materialSpecular[0], value.materialSpecular[1], value.materialSpecular[2], 1.0f};
+		const GLfloat materialShininess[] = {value.materialShininess};
 		const GLfloat pointAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
-		const GLfloat pointDiffuse[] = {1.0f, 0.0f, 0.0f, 1.0f};
-		const GLfloat pointSpecular[] = {1.0f, 0.0f, 0.0f, 1.0f};
+		const GLfloat pointDiffuse[] = {value.pointDiffuse[0], value.pointDiffuse[1], value.pointDiffuse[2], 1.0f};
+		const GLfloat pointSpecular[] = {value.pointSpecular[0], value.pointSpecular[1], value.pointSpecular[2], 1.0f};
 
 		glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
 		glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
@@ -47,22 +56,45 @@ namespace Metahuman
 
 	void Lighting::ApplySunLight() const
 	{
-		const GLfloat sunDirection[] = {-0.35f, 1.0f, 0.45f, 0.0f};
+		const float theta = WrapDegrees(value.sunThetaDeg) * (float)M_PI / 180.0f;
+		const float phi = WrapDegrees(value.sunPhiDeg) * (float)M_PI / 180.0f;
+		const float horizontal = std::cos(theta);
+		const GLfloat ambient[] = {value.sunAmbient[0], value.sunAmbient[1], value.sunAmbient[2], 1.0f};
+		const GLfloat diffuse[] = {value.sunDiffuse[0], value.sunDiffuse[1], value.sunDiffuse[2], 1.0f};
+		const GLfloat specular[] = {value.sunSpecular[0], value.sunSpecular[1], value.sunSpecular[2], 1.0f};
+		const GLfloat materialSpecular[] = {value.materialSpecular[0], value.materialSpecular[1], value.materialSpecular[2], 1.0f};
+		const GLfloat materialShininess[] = {value.materialShininess};
+		const GLfloat sunDirection[] = {
+		    horizontal * std::cos(phi),
+		    std::sin(theta),
+		    horizontal * std::sin(phi),
+		    0.0f};
+		glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpecular);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, materialShininess);
 		glLightfv(GL_LIGHT0, GL_POSITION, sunDirection);
 	}
 
 	void Lighting::ApplyPointLight(float elapsedSeconds) const
 	{
-		const float radius = 3.0f;
-		const float height = 0.8f;
-		const float angularSpeed = 1.5f;
-		const float angle = elapsedSeconds * angularSpeed;
+		const GLfloat pointDiffuse[] = {value.pointDiffuse[0], value.pointDiffuse[1], value.pointDiffuse[2], 1.0f};
+		const GLfloat pointSpecular[] = {value.pointSpecular[0], value.pointSpecular[1], value.pointSpecular[2], 1.0f};
+		const float angle = elapsedSeconds * value.pointAngularSpeed;
 		const GLfloat pointPosition[] = {
-		    std::cos(angle) * radius,
-		    height,
-		    std::sin(angle) * radius,
+		    std::cos(angle) * value.pointRadius,
+		    value.pointHeight,
+		    std::sin(angle) * value.pointRadius,
 		    1.0f};
 
+		glLightfv(GL_LIGHT1, GL_DIFFUSE, pointDiffuse);
+		glLightfv(GL_LIGHT1, GL_SPECULAR, pointSpecular);
 		glLightfv(GL_LIGHT1, GL_POSITION, pointPosition);
+	}
+
+	LightingValue &Lighting::GetValue()
+	{
+		return value;
 	}
 } // namespace Metahuman

@@ -47,6 +47,7 @@ namespace Metahuman
 			static const char *const HYPERBOLOID = "Hyperboloid";
 			static const char *const MODELS      = "Models";
 			static const char *const SCENE       = "Scene";
+			static const char *const LIGHTING    = "Lighting";
 		}
 		namespace LABEL
 		{

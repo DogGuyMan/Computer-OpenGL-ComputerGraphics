@@ -1,5 +1,6 @@
 #ifndef __METAHUMAN_USER_INTERFACE_H__
 #define __METAHUMAN_USER_INTERFACE_H__
+#include "lighting.h"
 #include "transformable.h"
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -41,6 +42,7 @@ namespace Metahuman {
 	// Hyperboloid 곡면 모델의 형상 파라미터(radius/height/shape)를 편집하는 패널.
 	// 값이 바뀌면 SetHyperboloidParams() 내부에서 build()로 메쉬가 재생성된다 (라이브).
 	void UIHyperboloidPanel(const char* label, Metahuman::IHyperboloidTransformable& geo);
+	void UILightingPanel(const char* label, Metahuman::LightingValue& lighting);
 
 	void UIReshape(int w, int h);
 	void UIMouse(int button, int state, int x, int y);
