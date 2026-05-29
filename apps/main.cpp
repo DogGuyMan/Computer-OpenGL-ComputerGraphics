@@ -54,6 +54,9 @@ namespace
 		KeroroHead,
 		KeroroBody,
 		KeroroHand,
+		KeroroArm,
+		KeroroLeg,
+		KeroroFoot,
 		KeroroHat
 	};
 
@@ -195,6 +198,12 @@ int main(int argc, char **argv)
 		int id = 0;
 		AddModel(ModelType::KeroroHead, id++);    // 디폴트로 만들어져야 하는것.
 		AddModel(ModelType::KeroroBody, id++);    // 디폴트로 만들어져야 하는것.
+		AddModel(ModelType::KeroroLeg, id++, 0);  // 왼다리
+		AddModel(ModelType::KeroroLeg, id++, 1);  // 오른다리
+		AddModel(ModelType::KeroroFoot, id++, 0); // 왼발
+		AddModel(ModelType::KeroroFoot, id++, 1); // 오른발
+		AddModel(ModelType::KeroroArm, id++, 0);  // 왼팔
+		AddModel(ModelType::KeroroArm, id++, 1);  // 오른팔
 		AddModel(ModelType::KeroroHand, id++, 0); // 왼손 (손이 Hat보다 먼저 그려져야 함)
 		AddModel(ModelType::KeroroHand, id++, 1); // 오른손
 		AddModel(ModelType::KeroroHat, id++);     // 투명 오브젝트는 가장 마지막에 렌더링
@@ -324,6 +333,12 @@ ModelType ModelTypeFromIndex(int index)
 		return ModelType::KeroroHat;
 	if (index == 3)
 		return ModelType::KeroroHand;
+	if (index == 4)
+		return ModelType::KeroroArm;
+	if (index == 5)
+		return ModelType::KeroroLeg;
+	if (index == 6)
+		return ModelType::KeroroFoot;
 	return ModelType::KeroroHead;
 }
 
@@ -339,6 +354,12 @@ const char *GetModelTypeLabel(ModelType type)
 		return MODEL::KERORO_HAT;
 	case ModelType::KeroroHand:
 		return MODEL::KERORO_HAND;
+	case ModelType::KeroroArm:
+		return MODEL::KERORO_ARM;
+	case ModelType::KeroroLeg:
+		return MODEL::KERORO_LEG;
+	case ModelType::KeroroFoot:
+		return MODEL::KERORO_FOOT;
 	}
 	return MODEL::UNKNOWN;
 }
@@ -358,6 +379,21 @@ bool TryParseModelType(const char *label, ModelType &type)
 	if (strcmp(label, MODEL::KERORO_HAND) == 0)
 	{
 		type = ModelType::KeroroHand;
+		return true;
+	}
+	if (strcmp(label, MODEL::KERORO_ARM) == 0)
+	{
+		type = ModelType::KeroroArm;
+		return true;
+	}
+	if (strcmp(label, MODEL::KERORO_LEG) == 0)
+	{
+		type = ModelType::KeroroLeg;
+		return true;
+	}
+	if (strcmp(label, MODEL::KERORO_FOOT) == 0)
+	{
+		type = ModelType::KeroroFoot;
 		return true;
 	}
 	if (strcmp(label, MODEL::KERORO_HAT) == 0)
@@ -412,6 +448,18 @@ bool AddModel(ModelType type, int id, int variant)
 		break;
 	case ModelType::KeroroHand:
 		renderer.AddModel(make_unique<KeroroHand>(
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), variant));
+		break;
+	case ModelType::KeroroArm:
+		renderer.AddModel(make_unique<KeroroArm>(
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), variant));
+		break;
+	case ModelType::KeroroLeg:
+		renderer.AddModel(make_unique<KeroroLeg>(
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), variant));
+		break;
+	case ModelType::KeroroFoot:
+		renderer.AddModel(make_unique<KeroroFoot>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), variant));
 		break;
 	case ModelType::KeroroHat:

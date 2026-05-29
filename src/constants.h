@@ -27,8 +27,11 @@ namespace Metahuman
 		static const char *const KERORO_BODY = "KeroroBody";
 		static const char *const KERORO_HAT  = "KeroroHat";
 		static const char *const KERORO_HAND = "KeroroHand";
+		static const char *const KERORO_ARM  = "KeroroArm";
+		static const char *const KERORO_LEG  = "KeroroLeg";
+		static const char *const KERORO_FOOT = "KeroroFoot";
 		static const char *const UNKNOWN     = "Unknown";
-		static const char *const MODEL_TYPES[] = {KERORO_HEAD, KERORO_BODY, KERORO_HAT, KERORO_HAND};
+		static const char *const MODEL_TYPES[] = {KERORO_HEAD, KERORO_BODY, KERORO_HAT, KERORO_HAND, KERORO_ARM, KERORO_LEG, KERORO_FOOT};
 	}
 
 	namespace APP
