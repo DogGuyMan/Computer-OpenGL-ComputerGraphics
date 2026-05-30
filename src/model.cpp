@@ -88,7 +88,7 @@ namespace Metahuman
 		params.vStart = v_start;
 		params.vEnd = v_end;
 		params.vRes = v_res;
-		// build()는 자식 생성자에서 호출 — SurfaceFunction이 순수가상이라
+		// build()는 자식 생성자에서 호출 : SurfaceFunction이 순수가상이라
 		// 베이스 생성자 시점에선 자식 버전이 디스패치되지 않음
 	}
 

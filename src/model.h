@@ -79,7 +79,7 @@ namespace Metahuman
 
 		// GetPODTransform/SetTransform은 Model 구현을 그대로 상속 (TRS는 메쉬와 무관).
 
-		// IParametricTransformable — u/v 범위·해상도를 POD 구조체로 노출.
+		// IParametricTransformable — u/v 범위*해상도를 POD 구조체로 노출.
 		// SetParametricParams는 값 교체 후 build()로 메쉬를 재생성한다.
 		void SetParametricParams(const ParametricValue &p) override;
 		const ParametricValue &GetParametricParams() const override;

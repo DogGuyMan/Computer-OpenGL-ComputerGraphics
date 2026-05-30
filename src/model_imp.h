@@ -7,7 +7,6 @@
 #include <GL/freeglut.h>
 #endif
 
-// MSVC에서 M_PI 노출 — <cmath>보다 먼저 정의되어야 함
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif
@@ -273,13 +272,12 @@ namespace Metahuman
 
 		virtual glm::vec4 SurfaceFunction(double u, double v) const override
 		{
-			// Paul Bourke 1-sheet hyperboloid (paulbourke.net/geometry/hyperboloid)
 			const float phi = (float)(u);
 			const float s = (float)(v);
 			const float d = hyper.shape;
-			const float r = hyper.radius * sqrtf(d * d + s * s) / sqrtf(d * d + 1.0f);
+			const float r = hyper.radius * sqrtf(d + s * s) / sqrtf(d + 1.0f);
 			return glm::vec4(r * cosf(phi),
-			                 -hyper.height * s, // y = -h·s (xz 평면 아래쪽으로 벌어짐)
+			                 -hyper.height * s, // y = -h*s (xz 평면 아래쪽으로 벌어짐)
 			                 r * sinf(phi),
 			                 1.0f);
 		}
@@ -307,8 +305,8 @@ namespace Metahuman
 			// 깊이를 기록해, 뒤쪽 면/배경을 가려 "뻥 뚫림"이 생긴다. 알파 테스트로 투명 텍셀을
 			// 폐기하면 불투명 면만 깊이를 써서, 일반 깊이 테스트가 앞면이 뒷면을 가리도록 처리한다.
 			glEnable(GL_ALPHA_TEST);
-			glAlphaFunc(GL_GREATER, 0.9f); 
-			ParametricGeometry::Draw();    // TRS 적용 + 격자 메쉬 렌더
+			glAlphaFunc(GL_GREATER, 0.9f);
+			ParametricGeometry::Draw(); // TRS 적용 + 격자 메쉬 렌더
 			glDisable(GL_ALPHA_TEST);
 
 			if (id != 0)
@@ -693,7 +691,7 @@ namespace Metahuman
 
 	  public:
 		KeroroHand(Texture *texture,
-				int sides,
+		           int sides,
 		           int slices = 32,
 		           int stacks = 16)
 		    : texture(texture), slices(slices), stacks(stacks)
@@ -788,22 +786,20 @@ namespace Metahuman
 			}
 			glColor3f(1.0f, 1.0f, 1.0f);
 
-			// --- 파트 1: 메인 팔 (JSON id: 3) ---
 			glPushMatrix();
 			glTranslatef(0.0f, 0.0f, 0.0f);
-			glRotatef(0.0f, 0.0f, 0.0f, 1.0f);  // Z
-			glRotatef(0.0f, 0.0f, 1.0f, 0.0f);  // Y
-			glRotatef(90.0f, 1.0f, 0.0f, 0.0f); // X
+			glRotatef(0.0f, 0.0f, 0.0f, 1.0f);
+			glRotatef(0.0f, 0.0f, 1.0f, 0.0f);
+			glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
 			glScalef(0.15f, 0.075f, 0.15f);
 			DrawCapsule();
 			glPopMatrix();
 
-			// --- 파트 2: 손가락 (JSON id: 4) ---
 			glPushMatrix();
 			glTranslatef(-0.125f, -0.075f, 0.0f);
-			glRotatef(35.0f, 0.0f, 0.0f, 1.0f);  // Z
-			glRotatef(45.0f, 0.0f, 1.0f, 0.0f); // Y
-			glRotatef(90.0f, 1.0f, 0.0f, 0.0f); // X
+			glRotatef(35.0f, 0.0f, 0.0f, 1.0f);
+			glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+			glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
 			glScalef(0.05f, 0.05f, 0.1f);
 			DrawCapsule();
 			glPopMatrix();

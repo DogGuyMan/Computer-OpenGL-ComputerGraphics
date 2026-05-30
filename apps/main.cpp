@@ -83,7 +83,7 @@ namespace
 		ModelMeta meta;
 		TransformValue xform;
 		UVValue uv;
-		// 아래 둘은 해당 인터페이스를 구현하는 모델에만 존재 — has* 플래그로 유무 표현.
+		// 아래 둘은 해당 인터페이스를 구현하는 모델에만 존재 : has* 플래그로 유무 표현.
 		// (KeroroHead=둘 다 없음, KeroroBody=parametric만, KeroroHat=둘 다)
 		bool hasParametric = false;
 		ParametricValue parametric;
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 	display.Setheight(600);
 	camera.SetFovSpeed(10.0);
 
-	/* 2-1. 모델 등록 — KeroroHat은 알파 PNG이므로 불투명 모델(head/body) 뒤에 등록(=마지막 draw) */
+	/* 2-1. 모델 등록 : KeroroHat은 알파 PNG이므로 불투명 모델(head/body) 뒤에 등록(=마지막 draw) */
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_FACE);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_BODY);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_HAT);
@@ -264,7 +264,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-/* GLUT 콜백 — 자유 함수에서 g_ctx 인스턴스로 위임 */
+/* GLUT 콜백 : 자유 함수에서 g_ctx 인스턴스로 위임 */
 void HandleWindowReshapeEvent(int w, int h)
 {
 	display.Reshape(w, h, camera);
@@ -459,7 +459,7 @@ void MakeModelLabel(const ModelMeta &meta, char *buffer, size_t bufferSize)
 }
 
 // variant: 같은 타입의 기본 포즈 변형 선택자(손의 좌=0/우=1 등). 생성 시점 기본 transform
-// 힌트일 뿐이며 영속적 정체성이 아니다 — 포즈의 진실은 저장/로드되는 transform이다.
+// 힌트일 뿐이며 영속적 정체성이 아니다 : 포즈의 진실은 저장/로드되는 transform이다.
 // 한 번 호출 = 모델 1개 = id 1개 (g_modelMetas와 renderer 모델 수의 1:1 불변식 유지).
 bool AddModel(ModelType type, int id, int variant)
 {

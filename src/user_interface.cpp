@@ -87,7 +87,7 @@ void Metahuman::UITransformPanel(const char* label, Metahuman::ITransformable& t
 		ImGui::Separator();
 	}
 
-	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
+	// 인터페이스로 현재 값을 복사해 와서 편집 : 변경 시에만 다시 Set.
 	Metahuman::TransformValue form = transform.GetPODTransform();
 	bool changed = false;
 	changed |= ImGui::DragFloat3(Metahuman::UI::LABEL::POSITION,   glm::value_ptr(form.translate), 0.05f);
@@ -103,7 +103,7 @@ void Metahuman::UIUVPanel(const char* label, Metahuman::IUVTransformable& uvt)
 {
 	ImGui::Begin(label);
 
-	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
+	// 인터페이스로 현재 값을 복사해 와서 편집 : 변경 시에만 다시 Set.
 	Metahuman::UVValue uv = uvt.GetUV();
 	bool changed = false;
 	changed |= ImGui::DragFloat2(Metahuman::UI::LABEL::UV_OFFSET,     glm::value_ptr(uv.offset), 0.05f);
@@ -119,18 +119,18 @@ void Metahuman::UIParametricPanel(const char* label, Metahuman::IParametricTrans
 {
 	ImGui::Begin(label);
 
-	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
+	// 인터페이스로 현재 값을 복사해 와서 편집 : 변경 시에만 다시 Set.
 	Metahuman::ParametricValue p = geo.GetParametricParams();
 	bool changed = false;
 
-	// u/v 범위 — uStart 등은 double. DragScalar로 임시 float 없이 직접 편집.
+	// u/v 범위 : uStart 등은 double. DragScalar로 임시 float 없이 직접 편집.
 	ImGui::TextUnformatted(Metahuman::UI::LABEL::RANGE);
 	changed |= ImGui::DragScalar(Metahuman::UI::LABEL::U_START, ImGuiDataType_Double, &p.uStart, 0.01f, nullptr, nullptr, "%.3f");
 	changed |= ImGui::DragScalar(Metahuman::UI::LABEL::U_END,   ImGuiDataType_Double, &p.uEnd,   0.01f, nullptr, nullptr, "%.3f");
 	changed |= ImGui::DragScalar(Metahuman::UI::LABEL::V_START, ImGuiDataType_Double, &p.vStart, 0.01f, nullptr, nullptr, "%.3f");
 	changed |= ImGui::DragScalar(Metahuman::UI::LABEL::V_END,   ImGuiDataType_Double, &p.vEnd,   0.01f, nullptr, nullptr, "%.3f");
 
-	// 해상도 — uRes/vRes는 size_t. ImGui에 size_t 위젯이 없어 int 임시값으로 편집 후 클램프.
+	// 해상도 : uRes/vRes는 size_t. ImGui에 size_t 위젯이 없어 int 임시값으로 편집 후 클램프.
 	ImGui::Separator();
 	ImGui::TextUnformatted(Metahuman::UI::LABEL::RESOLUTION);
 	int uResI = static_cast<int>(p.uRes);
@@ -146,7 +146,7 @@ void Metahuman::UIParametricPanel(const char* label, Metahuman::IParametricTrans
 		changed = true;
 	}
 
-	// 라이브 재생성 — 값이 바뀐 프레임에만 Set (내부에서 build() 호출)
+	// 라이브 재생성 : 값이 바뀐 프레임에만 Set (내부에서 build() 호출)
 	if (changed)
 		geo.SetParametricParams(p);
 
@@ -157,7 +157,7 @@ void Metahuman::UIHyperboloidPanel(const char* label, Metahuman::IHyperboloidTra
 {
 	ImGui::Begin(label);
 
-	// 인터페이스로 현재 값을 복사해 와서 편집 — 변경 시에만 다시 Set.
+	// 인터페이스로 현재 값을 복사해 와서 편집 : 변경 시에만 다시 Set.
 	Metahuman::HyperboloidValue p = geo.GetHyperboloidParams();
 	bool changed = false;
 
@@ -168,7 +168,7 @@ void Metahuman::UIHyperboloidPanel(const char* label, Metahuman::IHyperboloidTra
 	// shape(d): 0이면 이중원뿔, 클수록 원기둥에 수렴
 	changed |= ImGui::DragFloat(Metahuman::UI::LABEL::SHAPE,  &p.shape,  0.01f, 0.0f, 100.0f, "%.3f");
 
-	// 라이브 재생성 — 값이 바뀐 프레임에만 Set (내부에서 build() 호출)
+	// 라이브 재생성 : 값이 바뀐 프레임에만 Set (내부에서 build() 호출)
 	if (changed)
 		geo.SetHyperboloidParams(p);
 

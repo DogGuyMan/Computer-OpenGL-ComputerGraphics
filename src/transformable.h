@@ -33,7 +33,7 @@ namespace Metahuman
 	};
 
 	// 1-sheet hyperboloid 형상 파라미터 (Paul Bourke, paulbourke.net/geometry/hyperboloid)
-	//   단면 반경 r(s) = radius · \sqrt(shape^2 + s^2) / \sqrt(shape^2 + 1)
+	//   단면 반경 r(s) = radius * \sqrt(shape^2 + s^2) / \sqrt(shape^2 + 1)
 	//   shape(=d) -> 0: 이중원뿔,  shape : 원기둥에 수렴
 	struct HyperboloidValue
 	{
@@ -57,7 +57,7 @@ namespace Metahuman
 		IUVTransformable operator=(IUVTransformable &) = delete;
 	};
 
-	// 매개변수 곡면의 u/v 범위·해상도를 POD 구조체로 노출하는 인터페이스.
+	// 매개변수 곡면의 u/v 범위*해상도를 POD 구조체로 노출하는 인터페이스.
 	// UI(ImGui) 측은 이 인터페이스만 알면 되고, friend 없이 접근 가능하다.
 	// SetParametricParams 구현체는 값 교체 후 메쉬를 재생성(build)할 책임이 있다.
 	class IParametricTransformable

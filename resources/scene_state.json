@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "selectedModelIndex": 4,
+  "selectedModelIndex": 10,
   "models": [
     {
       "index": 0,
@@ -162,24 +162,24 @@
       "id": 10,
       "type": "KeroroHat",
       "transform": {
-        "translate": [0, 0.5, 0],
+        "translate": [0, 0.46, 0],
         "rotateDeg": [0, -101, 0],
         "scale": [1, 1, 1]
       },
       "uv": {
-        "offset": [0, 0.05],
+        "offset": [0, 0],
         "scale": [1.05, 1],
         "rotationDeg": 0
       },
       "parametric": {
         "uRange": [0, 6.28319],
         "vRange": [0.06, 0.5],
-        "resolution": [66, 8]
+        "resolution": [89, 8]
       },
       "hyperboloid": {
-        "radius": 2.244,
+        "radius": 2.3395,
         "height": 2.7,
-        "shape": 0.47
+        "shape": 0.2
       }
     }
   ]

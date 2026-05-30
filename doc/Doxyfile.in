@@ -1,0 +1,103 @@
+# Doxyfile.in — CMake configure_file(@ONLY) 템플릿
+#
+# 아래 @-변수 4개는 두 경로에서 동일하게 치환됩니다.
+#   1) 로컬: cmake/Doxygen.cmake 의 configure_file(... @ONLY)
+#   2) CI  : .github/workflows/deploy-doxygen.yml 의 sed 치환
+# 두 경로가 같은 출력을 내도록 변수 이름/개수를 반드시 동기화하세요.
+#
+#   @PROJECT_VERSION@    : project(... VERSION x.y.z ...) 값
+#   @DOXYGEN_INPUT_DIR@  : 소스 입력 루트 (src)
+#   @DOXYGEN_OUTPUT_DIR@ : 출력 루트 (doc) → HTML 은 doc/html
+#   @DOXYGEN_PAGES_DIR@  : 추가 마크다운 페이지 (doc/pages)
+
+#---------------------------------------------------------------------------
+# 프로젝트
+#---------------------------------------------------------------------------
+DOXYFILE_ENCODING      = UTF-8
+PROJECT_NAME           = "OpenGL-ComputerGraphics"
+PROJECT_NUMBER         = @PROJECT_VERSION@
+PROJECT_BRIEF          = "컴퓨터그래픽스및AI응용 — OpenGL 학습 프로젝트"
+OUTPUT_DIRECTORY       = @DOXYGEN_OUTPUT_DIR@
+# UI 라벨 언어. 추출되는 본문(주석)은 한국어 그대로 유지됩니다.
+# Korean 으로 바꾸면 Doxygen 1.16 의 한국어 번역 미완성으로 경고 1건이 발생합니다.
+OUTPUT_LANGUAGE        = English
+CREATE_SUBDIRS         = NO
+ALLOW_UNICODE_NAMES    = YES
+MARKDOWN_SUPPORT       = YES
+TAB_SIZE               = 4
+BUILTIN_STL_SUPPORT    = YES
+OPTIMIZE_OUTPUT_FOR_C  = NO
+
+#---------------------------------------------------------------------------
+# 추출 범위
+#---------------------------------------------------------------------------
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+CASE_SENSE_NAMES       = YES
+SORT_MEMBER_DOCS       = YES
+GENERATE_TODOLIST      = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_AS_ERROR          = NO
+
+#---------------------------------------------------------------------------
+# 입력
+#---------------------------------------------------------------------------
+INPUT                  = "@DOXYGEN_INPUT_DIR@" "@DOXYGEN_PAGES_DIR@"
+INPUT_ENCODING         = UTF-8
+FILE_PATTERNS          = *.c *.cc *.cpp *.cxx *.h *.hh *.hpp *.hxx *.md
+RECURSIVE              = YES
+USE_MDFILE_AS_MAINPAGE = @DOXYGEN_PAGES_DIR@/index.md
+EXCLUDE_PATTERNS       = */build_*/* */_deps/* */extern/*
+
+#---------------------------------------------------------------------------
+# 소스 브라우징
+#---------------------------------------------------------------------------
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+
+#---------------------------------------------------------------------------
+# HTML 출력
+#---------------------------------------------------------------------------
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .html
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = NO
+HTML_COLORSTYLE        = AUTO_LIGHT
+SEARCHENGINE           = YES
+
+#---------------------------------------------------------------------------
+# 기타 출력 (비활성)
+#---------------------------------------------------------------------------
+GENERATE_LATEX         = NO
+GENERATE_XML           = NO
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+GENERATE_DOCBOOK       = NO
+
+#---------------------------------------------------------------------------
+# 전처리기
+#---------------------------------------------------------------------------
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
+PREDEFINED             = __APPLE__ GL_SILENCE_DEPRECATION
+
+#---------------------------------------------------------------------------
+# Dot / Graphviz (CI 는 graphviz 설치, 로컬은 PATH 의 dot 사용)
+#---------------------------------------------------------------------------
+HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+DOT_GRAPH_MAX_NODES    = 100
