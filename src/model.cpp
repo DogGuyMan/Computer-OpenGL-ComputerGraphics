@@ -27,6 +27,10 @@ namespace Metahuman
 		return modelMatrix;
 	}
 
+	void Model::Submit() {}
+	void Model::Bind() {}
+	void Model::Unbind() {}
+
 	void Model::Draw()
 	{
 		recalculateModelMatrix();
@@ -137,13 +141,8 @@ namespace Metahuman
 		glVertex4fv(glm::value_ptr(vertices[idx]));
 	}
 
-	void ParametricGeometry::Draw()
+	void ParametricGeometry::Submit()
 	{
-		recalculateModelMatrix();
-
-		glPushMatrix();
-		glMultMatrixf(glm::value_ptr(modelMatrix));
-
 		const size_t vCount = params.vRes + 1;
 
 		for (size_t i = 0; i < params.uRes; ++i)
@@ -161,7 +160,20 @@ namespace Metahuman
 				glEnd();
 			}
 		}
+	}
 
+	void Bind() {}
+	void Unbind() {}
+
+	void ParametricGeometry::Draw()
+	{
+		recalculateModelMatrix();
+
+		glPushMatrix();
+		glMultMatrixf(glm::value_ptr(modelMatrix));
+		{
+			Submit();
+		}
 		glPopMatrix();
 	}
 

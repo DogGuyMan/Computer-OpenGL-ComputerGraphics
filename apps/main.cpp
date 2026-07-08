@@ -26,6 +26,8 @@
 #include "renderer.h"
 #include "skybox.h"
 #include "transformable.h"
+#include "material.h"
+#include "resource_management.h"
 #include "user_interface.h"
 #include <algorithm>
 #include <array>
@@ -92,6 +94,9 @@ namespace
 	};
 
 	vector<ModelMeta> g_modelMetas;
+	unique_ptr<ITechnique> g_textureTechnique;
+	unique_ptr<ITechnique> g_cartoonTechnique;
+	unique_ptr<ITechnique> g_backfaceOutlineTechnique;
 	ResourceManagement g_rm = ResourceManagement();
 	int g_selectedModelIndex = 0;
 	int g_addModelTypeIndex = 0;
@@ -192,6 +197,11 @@ int main(int argc, char **argv)
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_BODY);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_HAT);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_SKIN);
+	
+	g_textureTechnique = make_unique<TextureTechnique>();
+	// g_cartoonTechnique = make_unique<class Tp>();
+	// g_backfaceOutlineTechniqu = make_unique<class Tp>();
+
 	Texture *terrain = g_rm.LoadTexture(TEXTURE::TEX_TERRAIN);
 	Texture *terrain2 = g_rm.LoadTexture(TEXTURE::TEX_TERRAIN2);
 	g_ground.SetTexture(terrain ? terrain->GetTextureID() : 0);
@@ -210,6 +220,7 @@ int main(int argc, char **argv)
 	    texPX ? texPX->GetTextureID() : 0, texNX ? texNX->GetTextureID() : 0,
 	    texPY ? texPY->GetTextureID() : 0, texNY ? texNY->GetTextureID() : 0,
 	    texPZ ? texPZ->GetTextureID() : 0, texNZ ? texNZ->GetTextureID() : 0);
+	
 
 	g_selectedModelIndex = 0;
 	if (!LoadSceneState(GetSceneSavePath()))
@@ -470,11 +481,15 @@ bool AddModel(ModelType type, int id, int variant)
 	{
 	case ModelType::KeroroHead:
 		renderer.AddModel(make_unique<KeroroHead>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_FACE].get()));
+		    g_rm.textures[TEXTURE::TEX_KERORO_FACE].get(),
+		    g_textureTechnique.get()
+		));
 		break;
 	case ModelType::KeroroBody:
 		renderer.AddModel(make_unique<KeroroBody>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_BODY].get()));
+		    g_rm.textures[TEXTURE::TEX_KERORO_BODY].get(),
+		    g_textureTechnique.get()
+		));
 		break;
 	case ModelType::KeroroHand:
 		renderer.AddModel(make_unique<KeroroHand>(
@@ -494,7 +509,9 @@ bool AddModel(ModelType type, int id, int variant)
 		break;
 	case ModelType::KeroroHat:
 		renderer.AddModel(make_unique<KeroroHat>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_HAT].get()));
+		    g_rm.textures[TEXTURE::TEX_KERORO_HAT].get(),
+		    g_textureTechnique.get()
+		));
 		break;
 	}
 

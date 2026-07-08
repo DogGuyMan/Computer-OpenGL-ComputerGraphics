@@ -1,5 +1,6 @@
 #ifndef __METAHUMAN_MODEL_H__
 #define __METAHUMAN_MODEL_H__
+#include "material.h"
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
@@ -20,22 +21,27 @@ namespace Metahuman
 		// POD 형태의 변환 상태 — GetPODTransform()의 const& 반환을 위해 보관.
 		// Translate/Rotate/Scale이 각 필드를 갱신해 아래 TRS 행렬과 항상 정합 유지.
 		TransformValue trans;
-
+		
 		// TRS 분리 저장
 		glm::mat4 modelTMatrix = glm::mat4(1.0f);
 		glm::mat4 modelRMatrix = glm::mat4(1.0f);
 		glm::mat4 modelSMatrix = glm::mat4(1.0f);
-
+		
 		// 최종 합성 행렬 (지연 평가)
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		bool dirtyFlag = true;
-
+		
 		// dirty일 때만 modelMatrix 재계산
 		void recalculateModelMatrix();
-
+		
+		Material material;
+		
 	  public:
 		Model();
 		virtual ~Model();
+		virtual void Submit();
+		virtual void Bind();
+		virtual void Unbind();
 		virtual void Draw();
 
 		const glm::mat4 &GetModelMatrix();
@@ -75,7 +81,8 @@ namespace Metahuman
 		~ParametricGeometry() override = default;
 
 		// TRS 적용 후 GL_QUAD_STRIP으로 격자 렌더
-		void Draw() override;
+		virtual void Submit() override;
+		virtual void Draw() override;
 
 		// GetPODTransform/SetTransform은 Model 구현을 그대로 상속 (TRS는 메쉬와 무관).
 
