@@ -21,16 +21,13 @@
 #include "ground.h"
 #include "inputs.h"
 #include "lighting.h"
+#include "material.h"
 #include "model.h"
 #include "model_imp.h"
 #include "renderer.h"
+#include "resource_management.h"
 #include "skybox.h"
 #include "transformable.h"
-#include "material.h"
-#include "resource_management.h"
-#include "user_interface.h"
-#include <algorithm>
-#include <array>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -93,6 +90,7 @@ namespace
 		HyperboloidValue hyperboloid;
 	};
 
+	glm::vec3 lightDirEye;
 	vector<ModelMeta> g_modelMetas;
 	unique_ptr<ITechnique> g_textureTechnique;
 	unique_ptr<ITechnique> g_alphaTestTechnique;
@@ -136,11 +134,7 @@ void InitApplication(int &argc, char **argv, const AppConfig &cfg)
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
-	// 알파 채널이 있는 텍스처(PNG RGBA)를 투명하게 합성하기 위한 표준 블렌딩.
-	// 주의: 깊이 테스트와 함께 쓸 때, 반투명 모델은 불투명 모델보다 뒤에(나중에) 그려야
-	//      뒤쪽 색이 이미 프레임버퍼에 있어 정상 합성된다. 모델 등록 순서가 곧 draw 순서.
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glClearColor(cfg.clearColor[0], cfg.clearColor[1],
 	             cfg.clearColor[2], cfg.clearColor[3]);
 	g_lighting.Init();
@@ -196,11 +190,12 @@ int main(int argc, char **argv)
 	/* 2-1. 모델 등록 : KeroroHat은 알파 PNG이므로 불투명 모델(head/body) 뒤에 등록(=마지막 draw) */
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_FACE);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_BODY);
-	g_rm.LoadTexture(TEXTURE::TEX_KERORO_HAT);
+	g_rm.LoadTexture(TEXTURE::TEX_KERORO_HAT, GL_RGBA, GL_RGBA);
 	g_rm.LoadTexture(TEXTURE::TEX_KERORO_SKIN);
-	
+
 	g_textureTechnique = make_unique<TextureTechnique>();
-	// g_cartoonTechnique = make_unique<class Tp>();
+	g_alphaTestTechnique = make_unique<AlphaTestTechnique>();
+	g_cartoonTechnique = make_unique<CartoonTechnique>(&lightDirEye);
 	// g_backfaceOutlineTechniqu = make_unique<class Tp>();
 
 	Texture *terrain = g_rm.LoadTexture(TEXTURE::TEX_TERRAIN);
@@ -221,7 +216,6 @@ int main(int argc, char **argv)
 	    texPX ? texPX->GetTextureID() : 0, texNX ? texNX->GetTextureID() : 0,
 	    texPY ? texPY->GetTextureID() : 0, texNY ? texNY->GetTextureID() : 0,
 	    texPZ ? texPZ->GetTextureID() : 0, texNZ ? texNZ->GetTextureID() : 0);
-	
 
 	g_selectedModelIndex = 0;
 	if (!LoadSceneState(GetSceneSavePath()))
@@ -292,6 +286,29 @@ void HandleDisplayEvent()
 	// 매 프레임 투영 갱신 (FOV 변경 반영)
 	camera.ApplyProjection((float)display.GetAspectRatio());
 	camera.ApplyView();
+	{
+		auto lv = g_lighting.GetValue();
+		const float theta = lv.sunThetaDeg * (float)M_PI / 180.0f;
+		const float phi = lv.sunPhiDeg * (float)M_PI / 180.0f;
+		const float horizontal = cosf(theta);
+		const float sunW[3] = {horizontal * cosf(phi), sinf(theta), horizontal * sinf(phi)};
+
+		GLfloat mv[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, mv);
+		lightDirEye = {
+		    mv[0] * sunW[0] + mv[4] * sunW[1] + mv[8] * sunW[2], // 열 우선
+		    mv[1] * sunW[0] + mv[5] * sunW[1] + mv[9] * sunW[2],
+		    mv[2] * sunW[0] + mv[6] * sunW[1] + mv[10] * sunW[2],
+		};
+		auto& Le = lightDirEye;
+		const float len = sqrtf(Le[0] * Le[0] + Le[1] * Le[1] + Le[2] * Le[2]);
+		if (len > 1e-6f)
+		{
+			Le[0] /= len;
+			Le[1] /= len;
+			Le[2] /= len;
+		}
+	}
 
 	// 모든 투명/불투명 오브젝트를 그리기 전, 가장 뒷배경에 스카이박스를 먼저 그립니다.
 	g_skybox.Draw();
@@ -483,48 +500,54 @@ bool AddModel(ModelType type, int id, int variant)
 	case ModelType::KeroroHead:
 		renderer.AddModel(make_unique<KeroroHead>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_FACE].get(),
-		    g_textureTechnique.get()
-		));
+		    g_cartoonTechnique.get()));
 		break;
 	case ModelType::KeroroBody:
 		renderer.AddModel(make_unique<KeroroBody>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_BODY].get(),
-		    g_textureTechnique.get()
-		));
+		    g_cartoonTechnique.get()));
 		break;
 	case ModelType::KeroroHand:
 		renderer.AddModel(make_unique<KeroroHand>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 
-		    g_textureTechnique.get(),
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
+		    g_cartoonTechnique.get(),
 		    variant));
 		break;
 	case ModelType::KeroroArm:
 		renderer.AddModel(make_unique<KeroroArm>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 
-		    g_textureTechnique.get(),
-		    variant)
-		);
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
+		    g_cartoonTechnique.get(),
+		    variant));
 		break;
 	case ModelType::KeroroLeg:
 		renderer.AddModel(make_unique<KeroroLeg>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 
-		    g_textureTechnique.get(),
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
+		    g_cartoonTechnique.get(),
 		    variant));
 		break;
 	case ModelType::KeroroFoot:
 		renderer.AddModel(make_unique<KeroroFoot>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 
-		    g_textureTechnique.get(),
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
+		    g_cartoonTechnique.get(),
 		    variant));
 		break;
 	case ModelType::KeroroHat:
 		renderer.AddModel(make_unique<KeroroHat>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_HAT].get(),
-		    g_textureTechnique.get()
-		));
+		    g_cartoonTechnique.get()));
 		break;
 	}
+	/*
+[GLState BindEnter       ] ALPHA_TEST=0 (func=0x0207 ref=0.00) | BLEND=1 (0x302,0x303) | DEPTH=1 (func=0x201) | CULL=0 (mode=0x405) | TEX2D=0 bind=11 | LIGHTING=1 | MATMODE=0x1700 | color=(1.00,1.00,1.00,1.00)
+[GLState BindExit        ] ALPHA_TEST=0 (func=0x0207 ref=0.00) | BLEND=1 (0x302,0x303) | DEPTH=1 (func=0x201) | CULL=0 (mode=0x405) | TEX2D=1 bind=1 | LIGHTING=1 | MATMODE=0x1700 | color=(1.00,1.00,1.00,1.00)
+[GLState UnbindEnter     ] ALPHA_TEST=0 (func=0x0207 ref=0.00) | BLEND=1 (0x302,0x303) | DEPTH=1 (func=0x201) | CULL=0 (mode=0x405) | TEX2D=1 bind=1 | LIGHTING=1 | MATMODE=0x1700 | color=(1.00,1.00,1.00,1.00)
+[GLState UnbindExit      ] ALPHA_TEST=0 (func=0x0207 ref=0.00) | BLEND=1 (0x302,0x303) | DEPTH=1 (func=0x201) | CULL=0 (mode=0x405) | TEX2D=0 bind=1 | LIGHTING=1 | MATMODE=0x1700 | color=(1.00,1.00,1.00,1.00)
 
+[GLState BindEnter       ] ALPHA_TEST=0 (func=0x0204 ref=0.90) | BLEND=1 (0x302,0x303) | DEPTH=1 (func=0x201) | CULL=0 (mode=0x405) | TEX2D=0 bind=4 | LIGHTING=1 | MATMODE=0x1700 | color=(1.00,1.00,1.00,1.00)
+[GLState BindExit        ] ALPHA_TEST=1 (func=0x0204 ref=0.90) | BLEND=1 (0x302,0x303) | DEPTH=1 (func=0x201) | CULL=0 (mode=0x405) | TEX2D=1 bind=3 | LIGHTING=1 | MATMODE=0x1700 | color=(1.00,1.00,1.00,1.00)
+[GLState UnbindEnter     ] ALPHA_TEST=1 (func=0x0204 ref=0.90) | BLEND=1 (0x302,0x303) | DEPTH=1 (func=0x201) | CULL=0 (mode=0x405) | TEX2D=1 bind=3 | LIGHTING=1 | MATMODE=0x1700 | color=(1.00,1.00,1.00,1.00)
+[GLState UnbindExit      ] ALPHA_TEST=0 (func=0x0204 ref=0.90) | BLEND=1 (0x302,0x303) | DEPTH=1 (func=0x201) | CULL=0 (mode=0x405) | TEX2D=0 bind=3 | LIGHTING=1 | MATMODE=0x1700 | color=(1.00,1.00,1.00,1.00)
+	*/
 	g_modelMetas.push_back({id, type});
 	g_selectedModelIndex = (int)renderer.GetModelCount() - 1;
 	return true;

@@ -106,7 +106,7 @@ namespace Metahuman
 		void Unbind() final
 		{
 			if (material.techniquePtr)
-				material.techniquePtr->UnBind(this->material);
+				material.techniquePtr->Unbind(this->material);
 		}
 
 		void Draw() final
@@ -195,7 +195,7 @@ namespace Metahuman
 		void Unbind() final
 		{
 			if (material.techniquePtr)
-				material.techniquePtr->UnBind(this->material);
+				material.techniquePtr->Unbind(this->material);
 		}
 
 		void Draw() final
@@ -288,10 +288,7 @@ namespace Metahuman
 
 		void Submit() final
 		{
-			glEnable(GL_ALPHA_TEST);
-			glAlphaFunc(GL_GREATER, 0.9f);
 			ParametricGeometry::Submit();
-			glDisable(GL_ALPHA_TEST);
 		}
 
 		void Bind() final
@@ -303,7 +300,7 @@ namespace Metahuman
 		void Unbind() final
 		{
 			if (material.techniquePtr)
-				material.techniquePtr->UnBind(this->material);
+				material.techniquePtr->Unbind(this->material);
 		}
 
 		void Draw() final
@@ -414,7 +411,7 @@ namespace Metahuman
 		void Unbind() final
 		{
 			if (material.techniquePtr)
-				material.techniquePtr->UnBind(material);
+				material.techniquePtr->Unbind(material);
 		}
 
 		void Draw() final
@@ -527,7 +524,7 @@ namespace Metahuman
 		void Unbind() final
 		{
 			if (material.techniquePtr)
-				material.techniquePtr->UnBind(material);
+				material.techniquePtr->Unbind(material);
 		}
 
 		void Draw() final
@@ -632,7 +629,7 @@ namespace Metahuman
 		void Unbind() final
 		{
 			if (material.techniquePtr)
-				material.techniquePtr->UnBind(material);
+				material.techniquePtr->Unbind(material);
 		}
 
 		void Draw() final
@@ -794,7 +791,7 @@ namespace Metahuman
 		void Unbind() final
 		{
 			if (material.techniquePtr)
-				material.techniquePtr->UnBind(material);
+				material.techniquePtr->Unbind(material);
 		}
 
 		void Draw() final

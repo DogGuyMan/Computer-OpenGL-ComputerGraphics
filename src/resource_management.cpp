@@ -22,7 +22,8 @@ namespace Metahuman
 	 *********************************************************************************/
 	Texture::Texture(const std::string &path, GLint internal_format, GLuint format)
 	{
-		unsigned char *image = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		const int desired = (format == GL_RGBA) ? 4 : 3;
+		unsigned char *image = stbi_load(path.c_str(), &width, &height, &channels, desired);
 		if (!image)
 		{
 			std::cerr << "텍스처 로딩 실패:" << path << std::endl;
@@ -31,8 +32,7 @@ namespace Metahuman
 
 		glGenTextures(1, &textureID);
 		glBindTexture(GL_TEXTURE_2D, textureID);
-		format = (channels == 4) ? GL_RGBA : GL_RGB;
-		internal_format = (channels == 4) ? GL_RGBA : GL_RGB;
+		
 		// glPixelStorei(GL_UNPACK_ALIGNMENT, (channels == 4) ? 4 : 1);                // 정렬
 		glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, GL_UNSIGNED_BYTE, image);
 
