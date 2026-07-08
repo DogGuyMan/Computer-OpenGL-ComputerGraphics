@@ -325,8 +325,6 @@ namespace Metahuman
 	{
 	  private:
 		GLUquadric *quadric = nullptr;
-		Texture *texture = nullptr;
-		UVValue uv;
 		double bodyRadius = 0.11;
 		double handRadius = 0.23;
 		double length = 1.0;
@@ -334,19 +332,25 @@ namespace Metahuman
 		int stacks = 8;
 
 	  public:
-		KeroroArm(Texture *texture,
+		KeroroArm(Texture *texture, ITechnique *technique,
 		          int sides,
 		          int slices = 32,
 		          int stacks = 8)
-		    : texture(texture), slices(slices), stacks(stacks)
+		    : slices(slices), stacks(stacks)
 		{
-			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
-			uv = DefaultUV();
 			quadric = gluNewQuadric();
 			gluQuadricDrawStyle(quadric, GLU_FILL);
 			gluQuadricNormals(quadric, GLU_SMOOTH);
 			gluQuadricTexture(quadric, GL_TRUE);
 			gluQuadricOrientation(quadric, GLU_OUTSIDE);
+
+			material = {
+			    texture,
+			    DefaultUV(),
+			    {1.0f, 1.0f, 1.0f},
+			    technique};
+
+			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
 		}
 
 		~KeroroArm() override
@@ -360,11 +364,11 @@ namespace Metahuman
 
 		virtual void SetUV(const UVValue &t) override
 		{
-			uv = t;
+			material.uv = t;
 		}
 		virtual const UVValue &GetUV() const override
 		{
-			return uv;
+			return material.uv;
 		}
 
 		static TransformValue LeftDefaultTransform()
@@ -375,6 +379,7 @@ namespace Metahuman
 			t.scale = glm::vec3(1.0f, 0.5f, 0.5f);
 			return t;
 		}
+
 		static TransformValue RightDefaultTransform()
 		{
 			TransformValue t;
@@ -392,44 +397,37 @@ namespace Metahuman
 			return u;
 		}
 
-		void Draw() override
+		void Submit() final
 		{
-			recalculateModelMatrix();
-
-			glPushMatrix();
-			glMultMatrixf(glm::value_ptr(modelMatrix));
-
-			const GLuint id = texture ? texture->GetTextureID() : 0;
-			if (id != 0)
-			{
-				glEnable(GL_TEXTURE_2D);
-				glBindTexture(GL_TEXTURE_2D, id);
-
-				glMatrixMode(GL_TEXTURE);
-				glPushMatrix();
-				glLoadIdentity();
-				glTranslatef(uv.offset.x, uv.offset.y, 0.0f);
-				glRotatef(uv.rotationDeg, 0.0f, 0.0f, 1.0f);
-				glScalef(uv.scale.x, uv.scale.y, 1.0f);
-				glMatrixMode(GL_MODELVIEW);
-			}
-
-			glColor3f(1.0f, 1.0f, 1.0f);
-
 			glPushMatrix();
 			glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 			glTranslated(0.0, 0.0, -length * 0.5);
 			gluCylinder(quadric, bodyRadius, handRadius, length, slices, stacks);
 			glPopMatrix();
+		}
+		void Bind() final
+		{
+			if (material.techniquePtr)
+				material.techniquePtr->Bind(material);
+		}
 
-			if (id != 0)
+		void Unbind() final
+		{
+			if (material.techniquePtr)
+				material.techniquePtr->UnBind(material);
+		}
+
+		void Draw() final
+		{
+			recalculateModelMatrix();
+
+			glPushMatrix();
+			glMultMatrixf(glm::value_ptr(modelMatrix));
 			{
-				glMatrixMode(GL_TEXTURE);
-				glPopMatrix();
-				glMatrixMode(GL_MODELVIEW);
-				glDisable(GL_TEXTURE_2D);
+				Bind();
+				Submit();
+				Unbind();
 			}
-
 			glPopMatrix();
 		}
 	};
@@ -438,8 +436,6 @@ namespace Metahuman
 	{
 	  private:
 		GLUquadric *quadric = nullptr;
-		Texture *texture = nullptr;
-		UVValue uv;
 		double bodyRadius = 0.30;
 		double footRadius = 0.11;
 		double length = 1.0;
@@ -447,19 +443,26 @@ namespace Metahuman
 		int stacks = 8;
 
 	  public:
-		KeroroLeg(Texture *texture,
+		KeroroLeg(Texture *texture, ITechnique *technique,
 		          int sides,
 		          int slices = 32,
 		          int stacks = 8)
-		    : texture(texture), slices(slices), stacks(stacks)
+		    : slices(slices), stacks(stacks)
 		{
-			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
-			uv = DefaultUV();
+
 			quadric = gluNewQuadric();
 			gluQuadricDrawStyle(quadric, GLU_FILL);
 			gluQuadricNormals(quadric, GLU_SMOOTH);
 			gluQuadricTexture(quadric, GL_TRUE);
 			gluQuadricOrientation(quadric, GLU_OUTSIDE);
+
+			material = {
+			    texture,
+			    DefaultUV(),
+			    {1, 1, 1},
+			    technique};
+
+			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
 		}
 
 		~KeroroLeg() override
@@ -473,11 +476,12 @@ namespace Metahuman
 
 		virtual void SetUV(const UVValue &t) override
 		{
-			uv = t;
+			material.uv = t;
 		}
+
 		virtual const UVValue &GetUV() const override
 		{
-			return uv;
+			return material.uv;
 		}
 
 		static TransformValue LeftDefaultTransform()
@@ -505,44 +509,38 @@ namespace Metahuman
 			return u;
 		}
 
-		void Draw() override
+		void Submit() final
 		{
-			recalculateModelMatrix();
-
-			glPushMatrix();
-			glMultMatrixf(glm::value_ptr(modelMatrix));
-
-			const GLuint id = texture ? texture->GetTextureID() : 0;
-			if (id != 0)
-			{
-				glEnable(GL_TEXTURE_2D);
-				glBindTexture(GL_TEXTURE_2D, id);
-
-				glMatrixMode(GL_TEXTURE);
-				glPushMatrix();
-				glLoadIdentity();
-				glTranslatef(uv.offset.x, uv.offset.y, 0.0f);
-				glRotatef(uv.rotationDeg, 0.0f, 0.0f, 1.0f);
-				glScalef(uv.scale.x, uv.scale.y, 1.0f);
-				glMatrixMode(GL_MODELVIEW);
-			}
-
-			glColor3f(1.0f, 1.0f, 1.0f);
-
 			glPushMatrix();
 			glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 			glTranslated(0.0, 0.0, -length * 0.5);
 			gluCylinder(quadric, bodyRadius, footRadius, length, slices, stacks);
 			glPopMatrix();
+		}
 
-			if (id != 0)
+		void Bind() final
+		{
+			if (material.techniquePtr)
+				material.techniquePtr->Bind(material);
+		}
+
+		void Unbind() final
+		{
+			if (material.techniquePtr)
+				material.techniquePtr->UnBind(material);
+		}
+
+		void Draw() final
+		{
+			recalculateModelMatrix();
+
+			glPushMatrix();
+			glMultMatrixf(glm::value_ptr(modelMatrix));
 			{
-				glMatrixMode(GL_TEXTURE);
-				glPopMatrix();
-				glMatrixMode(GL_MODELVIEW);
-				glDisable(GL_TEXTURE_2D);
+				Bind();
+				Submit();
+				Unbind();
 			}
-
 			glPopMatrix();
 		}
 	};
@@ -551,26 +549,29 @@ namespace Metahuman
 	{
 	  private:
 		GLUquadric *quadric = nullptr;
-		Texture *texture = nullptr;
-		UVValue uv;
 		double radius = 1.0;
 		int slices = 32;
 		int stacks = 16;
 
 	  public:
-		KeroroFoot(Texture *texture,
+		KeroroFoot(Texture *texture, ITechnique *technique,
 		           int sides,
 		           int slices = 32,
 		           int stacks = 16)
-		    : texture(texture), slices(slices), stacks(stacks)
+		    : slices(slices), stacks(stacks)
 		{
-			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
-			uv = DefaultUV();
 			quadric = gluNewQuadric();
 			gluQuadricDrawStyle(quadric, GLU_FILL);
 			gluQuadricNormals(quadric, GLU_SMOOTH);
 			gluQuadricTexture(quadric, GL_TRUE);
 			gluQuadricOrientation(quadric, GLU_OUTSIDE);
+
+			material = {
+			    texture,
+			    DefaultUV(),
+			    {1, 1, 1},
+			    technique};
+			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
 		}
 
 		~KeroroFoot() override
@@ -584,11 +585,12 @@ namespace Metahuman
 
 		virtual void SetUV(const UVValue &t) override
 		{
-			uv = t;
+			material.uv = t;
 		}
+
 		virtual const UVValue &GetUV() const override
 		{
-			return uv;
+			return material.uv;
 		}
 
 		static TransformValue LeftDefaultTransform()
@@ -616,39 +618,34 @@ namespace Metahuman
 			return u;
 		}
 
-		void Draw() override
+		void Submit() final
+		{
+			gluSphere(quadric, radius, slices, stacks);
+		}
+
+		void Bind() final
+		{
+			if (material.techniquePtr)
+				material.techniquePtr->Bind(material);
+		}
+
+		void Unbind() final
+		{
+			if (material.techniquePtr)
+				material.techniquePtr->UnBind(material);
+		}
+
+		void Draw() final
 		{
 			recalculateModelMatrix();
 
 			glPushMatrix();
 			glMultMatrixf(glm::value_ptr(modelMatrix));
-
-			const GLuint id = texture ? texture->GetTextureID() : 0;
-			if (id != 0)
 			{
-				glEnable(GL_TEXTURE_2D);
-				glBindTexture(GL_TEXTURE_2D, id);
-
-				glMatrixMode(GL_TEXTURE);
-				glPushMatrix();
-				glLoadIdentity();
-				glTranslatef(uv.offset.x, uv.offset.y, 0.0f);
-				glRotatef(uv.rotationDeg, 0.0f, 0.0f, 1.0f);
-				glScalef(uv.scale.x, uv.scale.y, 1.0f);
-				glMatrixMode(GL_MODELVIEW);
+				Bind();
+				Submit();
+				Unbind();
 			}
-
-			glColor3f(1.0f, 1.0f, 1.0f);
-			gluSphere(quadric, radius, slices, stacks);
-
-			if (id != 0)
-			{
-				glMatrixMode(GL_TEXTURE);
-				glPopMatrix();
-				glMatrixMode(GL_MODELVIEW);
-				glDisable(GL_TEXTURE_2D);
-			}
-
 			glPopMatrix();
 		}
 	};
@@ -657,8 +654,6 @@ namespace Metahuman
 	{
 	  private:
 		GLUquadric *quadric = nullptr;
-		Texture *texture = nullptr;
-		UVValue uv;
 		int slices = 32;
 		int stacks = 16;
 
@@ -692,19 +687,25 @@ namespace Metahuman
 		}
 
 	  public:
-		KeroroHand(Texture *texture,
+		KeroroHand(Texture *texture, ITechnique *technique,
 		           int sides,
 		           int slices = 32,
 		           int stacks = 16)
-		    : texture(texture), slices(slices), stacks(stacks)
+		    : slices(slices), stacks(stacks)
 		{
-			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
-			uv = DefaultUV(); // 초기 UV 기본값 — 모델이 스스로 기본값으로 출발
 			quadric = gluNewQuadric();
 			gluQuadricDrawStyle(quadric, GLU_FILL);      // 채워진 면
 			gluQuadricNormals(quadric, GLU_SMOOTH);      // 부드러운 노멀 (조명 활성 시 사용)
 			gluQuadricTexture(quadric, GL_TRUE);         // UV 좌표 자동 생성 — 텍스처 매핑 필수
 			gluQuadricOrientation(quadric, GLU_OUTSIDE); // 노멀 바깥쪽 (구의 외부 셰이딩)
+
+			material = {
+			    texture,
+			    DefaultUV(),
+			    {1, 1, 1},
+			    technique};
+
+			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
 		}
 
 		~KeroroHand() override
@@ -720,11 +721,11 @@ namespace Metahuman
 		// 컴포넌트로 제작해서 확장 높이자.
 		virtual void SetUV(const UVValue &t) override
 		{
-			uv = t;
+			material.uv = t;
 		}
 		virtual const UVValue &GetUV() const override
 		{
-			return uv;
+			return material.uv;
 		}
 
 		// 프로그램 시작 시 ImGui(g_xforms/g_uvs)와 모델 상태를 동기화하기 위한 초기 기본값
@@ -763,31 +764,8 @@ namespace Metahuman
 			u.scale = glm::vec2(1.0f, 1.0f);
 			return u;
 		}
-
-		void Draw() override
+		void Submit() final
 		{
-			recalculateModelMatrix();
-
-			glPushMatrix();
-			glMultMatrixf(glm::value_ptr(modelMatrix));
-
-			const GLuint id = texture ? texture->GetTextureID() : 0;
-			if (id != 0)
-			{
-				glEnable(GL_TEXTURE_2D);
-				glBindTexture(GL_TEXTURE_2D, id);
-
-				// UV 변환은 GL_TEXTURE 매트릭스 스택에 적용 — quadric이 만든 (s,t)에 곱해짐
-				glMatrixMode(GL_TEXTURE);
-				glPushMatrix();
-				glLoadIdentity();
-				glTranslatef(uv.offset.x, uv.offset.y, 0.0f);
-				glRotatef(uv.rotationDeg, 0.0f, 0.0f, 1.0f);
-				glScalef(uv.scale.x, uv.scale.y, 1.0f);
-				glMatrixMode(GL_MODELVIEW); // 즉시 복원 — 다른 모델에 영향 안 가도록
-			}
-			glColor3f(1.0f, 1.0f, 1.0f);
-
 			glPushMatrix();
 			glTranslatef(0.0f, 0.0f, 0.0f);
 			glRotatef(0.0f, 0.0f, 0.0f, 1.0f);
@@ -805,15 +783,31 @@ namespace Metahuman
 			glScalef(0.05f, 0.05f, 0.1f);
 			DrawCapsule();
 			glPopMatrix();
+		}
 
-			if (id != 0)
+		void Bind() final
+		{
+			if (material.techniquePtr)
+				material.techniquePtr->Bind(material);
+		}
+
+		void Unbind() final
+		{
+			if (material.techniquePtr)
+				material.techniquePtr->UnBind(material);
+		}
+
+		void Draw() final
+		{
+			recalculateModelMatrix();
+
+			glPushMatrix();
+			glMultMatrixf(glm::value_ptr(modelMatrix));
 			{
-				glMatrixMode(GL_TEXTURE);
-				glPopMatrix();
-				glMatrixMode(GL_MODELVIEW);
-				glDisable(GL_TEXTURE_2D);
+				Bind();
+				Submit();
+				Unbind();
 			}
-
 			glPopMatrix();
 		}
 	};

@@ -95,6 +95,7 @@ namespace
 
 	vector<ModelMeta> g_modelMetas;
 	unique_ptr<ITechnique> g_textureTechnique;
+	unique_ptr<ITechnique> g_alphaTestTechnique;
 	unique_ptr<ITechnique> g_cartoonTechnique;
 	unique_ptr<ITechnique> g_backfaceOutlineTechnique;
 	ResourceManagement g_rm = ResourceManagement();
@@ -493,19 +494,28 @@ bool AddModel(ModelType type, int id, int variant)
 		break;
 	case ModelType::KeroroHand:
 		renderer.AddModel(make_unique<KeroroHand>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), variant));
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 
+		    g_textureTechnique.get(),
+		    variant));
 		break;
 	case ModelType::KeroroArm:
 		renderer.AddModel(make_unique<KeroroArm>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), variant));
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 
+		    g_textureTechnique.get(),
+		    variant)
+		);
 		break;
 	case ModelType::KeroroLeg:
 		renderer.AddModel(make_unique<KeroroLeg>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), variant));
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 
+		    g_textureTechnique.get(),
+		    variant));
 		break;
 	case ModelType::KeroroFoot:
 		renderer.AddModel(make_unique<KeroroFoot>(
-		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), variant));
+		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(), 
+		    g_textureTechnique.get(),
+		    variant));
 		break;
 	case ModelType::KeroroHat:
 		renderer.AddModel(make_unique<KeroroHat>(
