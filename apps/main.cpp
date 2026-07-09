@@ -196,7 +196,7 @@ int main(int argc, char **argv)
 	g_textureTechnique = make_unique<TextureTechnique>();
 	g_alphaTestTechnique = make_unique<AlphaTestTechnique>();
 	g_cartoonTechnique = make_unique<CartoonTechnique>(&lightDirEye);
-	// g_backfaceOutlineTechniqu = make_unique<class Tp>();
+	g_backfaceOutlineTechnique = make_unique<BackfaceOutlineTechnique>();
 
 	Texture *terrain = g_rm.LoadTexture(TEXTURE::TEX_TERRAIN);
 	Texture *terrain2 = g_rm.LoadTexture(TEXTURE::TEX_TERRAIN2);
@@ -500,41 +500,48 @@ bool AddModel(ModelType type, int id, int variant)
 	case ModelType::KeroroHead:
 		renderer.AddModel(make_unique<KeroroHead>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_FACE].get(),
-		    g_cartoonTechnique.get()));
+		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()}
+		));
 		break;
 	case ModelType::KeroroBody:
 		renderer.AddModel(make_unique<KeroroBody>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_BODY].get(),
-		    g_cartoonTechnique.get()));
+		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()}
+		));
 		break;
 	case ModelType::KeroroHand:
 		renderer.AddModel(make_unique<KeroroHand>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
-		    g_cartoonTechnique.get(),
-		    variant));
+		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()},
+		    variant
+		));
 		break;
 	case ModelType::KeroroArm:
 		renderer.AddModel(make_unique<KeroroArm>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
-		    g_cartoonTechnique.get(),
-		    variant));
+		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()},
+		    variant
+		));
 		break;
 	case ModelType::KeroroLeg:
 		renderer.AddModel(make_unique<KeroroLeg>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
-		    g_cartoonTechnique.get(),
-		    variant));
+		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()},
+		    variant
+		));
 		break;
 	case ModelType::KeroroFoot:
 		renderer.AddModel(make_unique<KeroroFoot>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
-		    g_cartoonTechnique.get(),
-		    variant));
+		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()},
+		    variant
+		));
 		break;
 	case ModelType::KeroroHat:
 		renderer.AddModel(make_unique<KeroroHat>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_HAT].get(),
-		    g_cartoonTechnique.get()));
+		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()}
+		));
 		break;
 	}
 	/*

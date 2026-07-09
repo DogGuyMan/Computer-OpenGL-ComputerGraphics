@@ -33,7 +33,7 @@ namespace Metahuman
 		int stacks = 16;
 
 	  public:
-		KeroroHead(Texture *texture, ITechnique *technique,
+		KeroroHead(Texture *texture, const std::vector<ITechnique *> &techniques,
 		           double radius = 1.0,
 		           int slices = 32,
 		           int stacks = 16)
@@ -49,7 +49,7 @@ namespace Metahuman
 			    texture,
 			    DefaultUV(),
 			    {1, 1, 1},
-			    technique};
+			    techniques};
 
 			SetTransform(DefaultTransform()); // 3. Transform
 		}
@@ -97,16 +97,18 @@ namespace Metahuman
 			gluSphere(quadric, radius, slices, stacks); // 1. Geometry
 		}
 
+		ITechnique *currentTechniquePtr = nullptr;
+
 		void Bind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Bind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Bind(material);
 		}
 
 		void Unbind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Unbind(this->material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Unbind(this->material);
 		}
 
 		void Draw() final
@@ -116,9 +118,14 @@ namespace Metahuman
 			glPushMatrix();                             // 3. 이 부분이 Transform
 			glMultMatrixf(glm::value_ptr(modelMatrix)); // 3. 이 부분이 Transform
 			{
-				Bind();
-				Submit();
-				Unbind();
+				currentTechniquePtr = nullptr;
+				for (auto techPtr : material.passes)
+				{
+					currentTechniquePtr = techPtr;
+					Bind();
+					Submit();
+					Unbind();
+				}
 			}
 			glPopMatrix(); // ???
 		}
@@ -127,7 +134,7 @@ namespace Metahuman
 	class KeroroBody : public ParametricGeometry, public IUVTransformable
 	{
 	  public:
-		KeroroBody(Texture *texture, ITechnique *technique,
+		KeroroBody(Texture *texture, const std::vector<ITechnique *> &techniques,
 		           size_t phiRes = 32,                    // u 분할 (경도) — 회전 부드러움
 		           size_t thetaRes = 16)                  // v 분할 (위도) — 프로파일 곡선
 		    : ParametricGeometry(0.0, 2.0 * M_PI, phiRes, // [0, 2π]
@@ -138,7 +145,7 @@ namespace Metahuman
 			    texture,
 			    DefaultUV(),
 			    {1, 1, 1},
-			    technique};
+			    techniques};
 
 			SetTransform(DefaultTransform()); // 3. Transform
 		}
@@ -186,16 +193,18 @@ namespace Metahuman
 			ParametricGeometry::Submit();
 		}
 
+		ITechnique *currentTechniquePtr = nullptr;
+
 		void Bind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Bind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Bind(material);
 		}
 
 		void Unbind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Unbind(this->material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Unbind(this->material);
 		}
 
 		void Draw() final
@@ -205,9 +214,14 @@ namespace Metahuman
 			glPushMatrix();                             // 3. 이 부분이 Transform
 			glMultMatrixf(glm::value_ptr(modelMatrix)); // 3. 이 부분이 Transform
 			{
-				Bind();
-				Submit();
-				Unbind();
+				currentTechniquePtr = nullptr;
+				for (auto techPtr : material.passes)
+				{
+					currentTechniquePtr = techPtr;
+					Bind();
+					Submit();
+					Unbind();
+				}
 			}
 			glPopMatrix(); // ???
 		}
@@ -219,7 +233,7 @@ namespace Metahuman
 		HyperboloidValue hyper{2.074f, 2.7f, 0.52f};
 
 	  public:
-		KeroroHat(Texture *texture, ITechnique *technique,
+		KeroroHat(Texture *texture, const std::vector<ITechnique *> &techniques,
 		          size_t uRes = 64,                     // u 분할 (수평, 경도) — specular highlight가 정점에 잡히도록 촘촘히
 		          size_t vRes = 64)                     // v 분할 (수직) — 프로파일 곡선 (Gouraud specular 정밀도)
 		    : ParametricGeometry(0.0, 2.0 * M_PI, uRes, // [0, 2π]
@@ -230,7 +244,7 @@ namespace Metahuman
 			    texture,
 			    DefaultUV(),
 			    {1, 1, 1},
-			    technique};
+			    techniques};
 			SetTransform(DefaultTransform());
 		}
 
@@ -291,16 +305,18 @@ namespace Metahuman
 			ParametricGeometry::Submit();
 		}
 
+		ITechnique *currentTechniquePtr = nullptr;
+
 		void Bind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Bind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Bind(material);
 		}
 
 		void Unbind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Unbind(this->material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Unbind(this->material);
 		}
 
 		void Draw() final
@@ -310,9 +326,14 @@ namespace Metahuman
 			glPushMatrix();                             // 3. 이 부분이 Transform
 			glMultMatrixf(glm::value_ptr(modelMatrix)); // 3. 이 부분이 Transform
 			{
-				Bind();
-				Submit();
-				Unbind();
+				currentTechniquePtr = nullptr;
+				for (auto techPtr : material.passes)
+				{
+					currentTechniquePtr = techPtr;
+					Bind();
+					Submit();
+					Unbind();
+				}
 			}
 			glPopMatrix();
 		}
@@ -329,7 +350,7 @@ namespace Metahuman
 		int stacks = 8;
 
 	  public:
-		KeroroArm(Texture *texture, ITechnique *technique,
+		KeroroArm(Texture *texture, const std::vector<ITechnique *> &techniques,
 		          int sides,
 		          int slices = 32,
 		          int stacks = 8)
@@ -345,7 +366,7 @@ namespace Metahuman
 			    texture,
 			    DefaultUV(),
 			    {1.0f, 1.0f, 1.0f},
-			    technique};
+			    techniques};
 
 			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
 		}
@@ -402,16 +423,19 @@ namespace Metahuman
 			gluCylinder(quadric, bodyRadius, handRadius, length, slices, stacks);
 			glPopMatrix();
 		}
+
+		ITechnique *currentTechniquePtr = nullptr;
+
 		void Bind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Bind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Bind(material);
 		}
 
 		void Unbind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Unbind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Unbind(this->material);
 		}
 
 		void Draw() final
@@ -421,9 +445,14 @@ namespace Metahuman
 			glPushMatrix();
 			glMultMatrixf(glm::value_ptr(modelMatrix));
 			{
-				Bind();
-				Submit();
-				Unbind();
+				currentTechniquePtr = nullptr;
+				for (auto techPtr : material.passes)
+				{
+					currentTechniquePtr = techPtr;
+					Bind();
+					Submit();
+					Unbind();
+				}
 			}
 			glPopMatrix();
 		}
@@ -440,7 +469,7 @@ namespace Metahuman
 		int stacks = 8;
 
 	  public:
-		KeroroLeg(Texture *texture, ITechnique *technique,
+		KeroroLeg(Texture *texture, const std::vector<ITechnique *> &techniques,
 		          int sides,
 		          int slices = 32,
 		          int stacks = 8)
@@ -457,7 +486,7 @@ namespace Metahuman
 			    texture,
 			    DefaultUV(),
 			    {1, 1, 1},
-			    technique};
+			    techniques};
 
 			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
 		}
@@ -515,16 +544,18 @@ namespace Metahuman
 			glPopMatrix();
 		}
 
+		ITechnique *currentTechniquePtr = nullptr;
+
 		void Bind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Bind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Bind(material);
 		}
 
 		void Unbind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Unbind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Unbind(this->material);
 		}
 
 		void Draw() final
@@ -534,9 +565,14 @@ namespace Metahuman
 			glPushMatrix();
 			glMultMatrixf(glm::value_ptr(modelMatrix));
 			{
-				Bind();
-				Submit();
-				Unbind();
+				currentTechniquePtr = nullptr;
+				for (auto techPtr : material.passes)
+				{
+					currentTechniquePtr = techPtr;
+					Bind();
+					Submit();
+					Unbind();
+				}
 			}
 			glPopMatrix();
 		}
@@ -551,7 +587,7 @@ namespace Metahuman
 		int stacks = 16;
 
 	  public:
-		KeroroFoot(Texture *texture, ITechnique *technique,
+		KeroroFoot(Texture *texture, const std::vector<ITechnique *> &techniques,
 		           int sides,
 		           int slices = 32,
 		           int stacks = 16)
@@ -567,7 +603,7 @@ namespace Metahuman
 			    texture,
 			    DefaultUV(),
 			    {1, 1, 1},
-			    technique};
+			    techniques};
 			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
 		}
 
@@ -620,16 +656,18 @@ namespace Metahuman
 			gluSphere(quadric, radius, slices, stacks);
 		}
 
+		ITechnique *currentTechniquePtr = nullptr;
+
 		void Bind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Bind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Bind(material);
 		}
 
 		void Unbind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Unbind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Unbind(this->material);
 		}
 
 		void Draw() final
@@ -639,9 +677,14 @@ namespace Metahuman
 			glPushMatrix();
 			glMultMatrixf(glm::value_ptr(modelMatrix));
 			{
-				Bind();
-				Submit();
-				Unbind();
+				currentTechniquePtr = nullptr;
+				for (auto techPtr : material.passes)
+				{
+					currentTechniquePtr = techPtr;
+					Bind();
+					Submit();
+					Unbind();
+				}
 			}
 			glPopMatrix();
 		}
@@ -684,7 +727,7 @@ namespace Metahuman
 		}
 
 	  public:
-		KeroroHand(Texture *texture, ITechnique *technique,
+		KeroroHand(Texture *texture, const std::vector<ITechnique *> &techniques,
 		           int sides,
 		           int slices = 32,
 		           int stacks = 16)
@@ -700,7 +743,7 @@ namespace Metahuman
 			    texture,
 			    DefaultUV(),
 			    {1, 1, 1},
-			    technique};
+			    techniques};
 
 			SetTransform(sides == 0 ? LeftDefaultTransform() : RightDefaultTransform());
 		}
@@ -761,6 +804,7 @@ namespace Metahuman
 			u.scale = glm::vec2(1.0f, 1.0f);
 			return u;
 		}
+
 		void Submit() final
 		{
 			glPushMatrix();
@@ -782,16 +826,18 @@ namespace Metahuman
 			glPopMatrix();
 		}
 
+		ITechnique *currentTechniquePtr = nullptr;
+
 		void Bind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Bind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Bind(material);
 		}
 
 		void Unbind() final
 		{
-			if (material.techniquePtr)
-				material.techniquePtr->Unbind(material);
+			if (currentTechniquePtr)
+				currentTechniquePtr->Unbind(this->material);
 		}
 
 		void Draw() final
@@ -801,9 +847,14 @@ namespace Metahuman
 			glPushMatrix();
 			glMultMatrixf(glm::value_ptr(modelMatrix));
 			{
-				Bind();
-				Submit();
-				Unbind();
+				currentTechniquePtr = nullptr;
+				for (auto techPtr : material.passes)
+				{
+					currentTechniquePtr = techPtr;
+					Bind();
+					Submit();
+					Unbind();
+				}
 			}
 			glPopMatrix();
 		}

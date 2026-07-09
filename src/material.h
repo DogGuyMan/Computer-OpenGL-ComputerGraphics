@@ -3,6 +3,7 @@
 #include "resource_management.h"
 #include "transformable.h"
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace Metahuman
 {
@@ -47,7 +48,7 @@ namespace Metahuman
 		Texture *albedoPtr = nullptr;
 		UVValue uv;
 		glm::vec3 baseColor{1, 1, 1};
-		ITechnique *techniquePtr = nullptr;
+		std::vector<ITechnique *> passes;
 	};
 
 	class ITechnique
@@ -229,7 +230,7 @@ namespace Metahuman
 		void Bind(const Material &mt) override
 		{
 			glDisable(GL_LIGHTING);
-			glDisable(GL_TEXTURE_2D);   // 1D가 이기도록
+			glDisable(GL_TEXTURE_2D); // 1D가 이기도록
 			glEnable(GL_TEXTURE_1D);
 			glBindTexture(GL_TEXTURE_1D, mRampTex);
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -247,10 +248,22 @@ namespace Metahuman
 			glMatrixMode(GL_TEXTURE);
 
 			GLfloat m[16] = {
-			    0.5f * (*mLightDirEyePtr)[0], 0.0f, 0.0f, 0.0f, // 열0
-			    0.5f * (*mLightDirEyePtr)[1], 0.0f, 0.0f, 0.0f, // 열1
-			    0.5f * (*mLightDirEyePtr)[2], 0.0f, 0.0f, 0.0f, // 열2
-			    0.5f, 0.0f, 0.0f, 1.0f, // 열3
+			    0.5f * (*mLightDirEyePtr)[0],
+			    0.0f,
+			    0.0f,
+			    0.0f, // 열0
+			    0.5f * (*mLightDirEyePtr)[1],
+			    0.0f,
+			    0.0f,
+			    0.0f, // 열1
+			    0.5f * (*mLightDirEyePtr)[2],
+			    0.0f,
+			    0.0f,
+			    0.0f, // 열2
+			    0.5f,
+			    0.0f,
+			    0.0f,
+			    1.0f, // 열3
 			};
 			glLoadMatrixf(m);
 			glMatrixMode(GL_MODELVIEW);
@@ -268,6 +281,41 @@ namespace Metahuman
 			glEnable(GL_LIGHTING);
 		}
 	};
+
+	class BackfaceOutlineTechnique : public ITechnique
+	{
+	  private:
+		float mScale = 1.03f;
+	  public:
+		BackfaceOutlineTechnique()
+		{
+		}
+
+		void Bind(const Material &mt) override
+		{
+			glPushMatrix();
+			glScalef(mScale, mScale, mScale);
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_FRONT);
+			glDisable(GL_LIGHTING);
+			glDisable(GL_TEXTURE_2D); glDisable(GL_TEXTURE_1D);
+			glDisable(GL_TEXTURE_GEN_S); 
+			glDisable(GL_TEXTURE_GEN_T);
+			glDisable(GL_TEXTURE_GEN_R);
+			glColor3f(0.0f, 0.0f, 0.0f);
+		}
+
+		void Unbind(const Material &mt) override
+		{
+			glCullFace(GL_BACK);
+			glDisable(GL_CULL_FACE);
+			glEnable(GL_LIGHTING);
+			glPopMatrix();
+		}
+	};
+
+
+
 }; // namespace Metahuman
 
 #endif //__METAHUMAN_MATERIAL_H__
