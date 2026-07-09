@@ -216,15 +216,12 @@ namespace Metahuman
 	class KeroroHat : public ParametricGeometry, public IUVTransformable, public IHyperboloidTransformable
 	{
 	  private:
-		Texture *texture = nullptr;
-		UVValue uv;
-		// 형상 파라미터 — radius / height / shape(d)
-		HyperboloidValue hyper{2.3395f, 2.7f, 0.2f};
+		HyperboloidValue hyper{2.074f, 2.7f, 0.52f};
 
 	  public:
-		KeroroHat(Texture *texture = nullptr,
-		          size_t uRes = 89,                     // u 분할 (수평, 경도) — specular highlight가 정점에 잡히도록 촘촘히
-		          size_t vRes = 8)                      // v 분할 (수직) — 프로파일 곡선 (Gouraud specular 정밀도)
+		KeroroHat(Texture *texture, ITechnique *technique,
+		          size_t uRes = 64,                     // u 분할 (수평, 경도) — specular highlight가 정점에 잡히도록 촘촘히
+		          size_t vRes = 64)                     // v 분할 (수직) — 프로파일 곡선 (Gouraud specular 정밀도)
 		    : ParametricGeometry(0.0, 2.0 * M_PI, uRes, // [0, 2π]
 		                         0.06, 0.5, vRes)       // [0.06, 0.5], xz 평면 아래쪽 절반
 		{
@@ -250,8 +247,8 @@ namespace Metahuman
 		static TransformValue DefaultTransform()
 		{
 			TransformValue t;
-			t.translate = glm::vec3(0.0f, 0.46f, 0.0f);
-			t.eulerDeg = glm::vec3(0.0f, -101.0f, 0.0f);
+			t.translate = glm::vec3(0.0f, 0.5f, 0.0f);
+			t.eulerDeg = glm::vec3(0.0f, -124.0f, 0.0f);
 			t.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 			return t;
 		}
@@ -259,8 +256,8 @@ namespace Metahuman
 		static UVValue DefaultUV()
 		{
 			UVValue u;
-			u.offset = glm::vec2(0.0f, 0.0f);
-			u.scale = glm::vec2(1.05f, 1.0f);
+			u.offset = glm::vec2(0.0f, -0.050f);
+			u.scale = glm::vec2(1.2f, 1.0f);
 			return u;
 		}
 

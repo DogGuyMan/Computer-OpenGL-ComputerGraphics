@@ -1,14 +1,6 @@
 
 # 컴퓨터그래픽스및AI응용
 
-> ### 📄 구성원
-
-|chorogchip|DogGuyMan|
-|---|---|
-|<a href="https://github.com/chorogchip"><img src="https://github.com/chorogchip.png" width="90">|<a href="https://github.com/DogGuyMan"><img src="https://github.com/DogGuyMan.png" width="90"></a>|
-
-> ### 📄 작업 주제 : GlutAPI + 케로로 모델링 & 렌더링
-
 <div align=center>
     <a href="https://www.youtube.com/watch?v=BvLO3C3dpKo&list=PLIMQzWccmG7YWLpXeiQRaBV94vfIJc2Ex&index=19"><img src="https://img.youtube.com/vi/BvLO3C3dpKo/hqdefault.jpg" width="480" alt="Video 1"></a>
     <h5>케로로 모델 (손 제외) 팔, 다리, 얼굴, 몸통 레퍼런스</h5>
@@ -16,20 +8,21 @@
     <h5>케로로 모델 손(벙어리 손) 레퍼런스 -> 근데 그냥 도라에몽처럼 동그란 손으로 대체하는게 빠를지도.. </h5>
 </div>
 
-#### 1). 추가 레퍼런스 이미지 
-* [📁 docs/metahuman](https://github.com/DogGuyMan/Computer-OpenGL-ComputerGraphics/tree/main/docs/metahuman)
+#### 추가 레퍼런스 이미지 
+[📁 docs/metahuman](https://github.com/DogGuyMan/Computer-OpenGL-ComputerGraphics/tree/main/docs/metahuman)
 
-#### 2). 메타휴먼 발표자료
-* [보고서](./docs/보고서/메타휴먼발표자료.md)
+#### [보고서](./docs/보고서/메타휴먼발표자료.md)
 
-#### 3). 작업 우선순위
+#### 우선순위
 
-1. [x] 케로로 모델 (얼굴, 몸통, 팔 다리) -> 여기만 해도 과제 제출 용 최소 구현
+
+1. [ ] 케로로 모델 (얼굴, 몸통, 팔 다리) -> 여기만 해도 과제 제출 용 최소 구현
 2. [x] Skybox 배경, 바닥
 3. [x] 벙어리 손 구체화?
 4. [ ] Ramp Cartoon Rendering & Back Face Culling + Inverted Hull Outline
 
-#### 4). 결과
+### 결과
+
 
 <div align=center>
     <img src="image/스크린샷 2026-05-29 23.18.45.png" width="100%">
@@ -39,6 +32,7 @@
 ---
 
 > ### 📄 사용한 툴
+
 
 #### 1). 플랫폼
 
