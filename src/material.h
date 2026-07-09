@@ -49,6 +49,9 @@ namespace Metahuman
 		UVValue uv;
 		glm::vec3 baseColor{1, 1, 1};
 		std::vector<ITechnique *> passes;
+		// per-model 아웃라인 두께. aggregate 초기화 마지막 자리라 model_imp.h는
+		// {tex, uv, color, techniques}만 넘겨도 여기 default(1.03f)가 적용된다.
+		float outlineScale = 1.03f;
 	};
 
 	class ITechnique
@@ -69,10 +72,12 @@ namespace Metahuman
 			const UVValue &uv = mt.uv;
 			const glm::vec3 &color = mt.baseColor;
 			const GLuint id = texture ? texture->GetTextureID() : 0;
+			glDisable(GL_LIGHTING);
 			if (id != 0)
 			{
 				glEnable(GL_TEXTURE_2D);
 				glBindTexture(GL_TEXTURE_2D, id);
+				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 				glMatrixMode(GL_TEXTURE);
 				glPushMatrix();
@@ -84,8 +89,10 @@ namespace Metahuman
 			}
 			glColor3f(color.r, color.g, color.b);
 		}
+
 		void Unbind(const Material &mt) override
 		{
+			glEnable(GL_LIGHTING);
 			Texture *texture = mt.albedoPtr;
 			const UVValue &uv = mt.uv;
 			const glm::vec3 &color = mt.baseColor;
@@ -224,7 +231,14 @@ namespace Metahuman
 		explicit CartoonTechnique(const glm::vec3 *lightDirEye)
 		    : mLightDirEyePtr(lightDirEye)
 		{
-			uploadRamp(1);
+			uploadRamp(0);
+		}
+
+		~CartoonTechnique() override {
+			if(mRampTex){
+				glDeleteTextures(1, &mRampTex);
+				mRampTex = 0;
+			}
 		}
 
 		void Bind(const Material &mt) override
@@ -265,12 +279,25 @@ namespace Metahuman
 			    0.0f,
 			    1.0f, // 열3
 			};
+			glEnable(GL_BLEND);
+			// GL_DST_COLOR 가 Src이고 GL_ZERO가 Dst 아닌가?
+			/*
+			result 	= ramp × (GL_ZERO) + albedo × (GL_SRC_COLOR)
+       				= ramp × 0         + albedo × ramp
+       				= albedo × ramp    ✅  (순수 곱)
+			*/
+			glBlendFunc(GL_ZERO, GL_SRC_COLOR);   // = ramp × (이미 그린 albedo)
+			glDepthFunc(GL_EQUAL);               // 같은 깊이 통과 (LESS면 전부 탈락 → 아무것도 안 그려짐!)
+			glDepthMask(GL_FALSE);                // 깊이 재기록 방지
 			glLoadMatrixf(m);
 			glMatrixMode(GL_MODELVIEW);
 		}
 
 		void Unbind(const Material &mt) override
 		{
+			glDepthMask(GL_TRUE);
+			glDepthFunc(GL_LESS);
+			glDisable(GL_BLEND);
 			glDisable(GL_TEXTURE_GEN_S);
 			glDisable(GL_TEXTURE_GEN_T);
 			glDisable(GL_TEXTURE_GEN_R);
@@ -285,7 +312,6 @@ namespace Metahuman
 	class BackfaceOutlineTechnique : public ITechnique
 	{
 	  private:
-		float mScale = 1.03f;
 	  public:
 		BackfaceOutlineTechnique()
 		{
@@ -294,7 +320,10 @@ namespace Metahuman
 		void Bind(const Material &mt) override
 		{
 			glPushMatrix();
-			glScalef(mScale, mScale, mScale);
+			{
+				auto& mScale = mt.outlineScale;
+				glScalef(mScale, mScale, mScale);
+			}
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_FRONT);
 			glDisable(GL_LIGHTING);

@@ -202,6 +202,19 @@ void Metahuman::UILightingPanel(const char* label, Metahuman::LightingValue& lig
 	ImGui::End();
 }
 
+void Metahuman::UIMaterialPanel(const char* label, Metahuman::Material& mt)
+{
+	ImGui::Begin(label);
+
+	// outlineScale은 per-model float 공개 필드 → 필드 주소를 슬라이더에 직접 바인딩.
+	// (BackfaceOutlineTechnique만 이 값을 읽음. 아웃라인 패스 없는 Hat엔 무효)
+	ImGui::SliderFloat(Metahuman::UI::LABEL::OUTLINE_SCALE, &mt.outlineScale, 1.0f, 1.5f, "%.3f");
+	// baseColor: TextureTechnique가 GL_REPLACE라 텍스처 파트엔 반영 안 될 수 있음(무텍스처 파트에만 가시).
+	ImGui::ColorEdit3(Metahuman::UI::LABEL::BASE_COLOR, glm::value_ptr(mt.baseColor));
+
+	ImGui::End();
+}
+
 bool Metahuman::UIModelAddPanel(const char* label, const char* const* modelTypes, int modelTypeCount,
                                 int& selectedTypeIndex, int& id)
 {

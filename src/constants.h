@@ -53,6 +53,7 @@ namespace Metahuman
 			static const char *const MODELS      = "Models";
 			static const char *const SCENE       = "Scene";
 			static const char *const LIGHTING    = "Lighting";
+			static const char *const MATERIAL    = "Material";
 		}
 		namespace LABEL
 		{
@@ -81,6 +82,8 @@ namespace Metahuman
 			static const char *const SAVE_JSON          = "Save JSON";
 			static const char *const SAVE_COMPLETE      = "Save complete";
 			static const char *const SAVE_FAILED        = "Save failed";
+			static const char *const OUTLINE_SCALE      = "Outline Scale";
+			static const char *const BASE_COLOR         = "Base Color";
 		}
 	}
 }; // namespace Metahuman

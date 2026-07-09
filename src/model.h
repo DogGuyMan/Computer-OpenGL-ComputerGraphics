@@ -48,6 +48,11 @@ namespace Metahuman
 		virtual const TransformValue &GetPODTransform() const override;
 		virtual void SetTransform(const TransformValue &p) override;
 
+		// Material은 모든 모델의 보편 능력이라 dynamic_cast 인터페이스 대신 베이스 접근자로 노출.
+		// UI(UIMaterialPanel)가 per-instance outlineScale/baseColor를 직접 읽고 쓴다.
+		Material &GetMaterial() { return material; }
+		const Material &GetMaterial() const { return material; }
+
 		/* Transformable — 모두 절대값 설정 (누적 아님) */
 		void Translate(const glm::fvec3 &pos) override;
 		void Rotate(const glm::fvec3 &eulerDeg) override;

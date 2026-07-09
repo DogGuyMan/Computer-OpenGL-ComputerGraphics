@@ -1,6 +1,7 @@
 #ifndef __METAHUMAN_USER_INTERFACE_H__
 #define __METAHUMAN_USER_INTERFACE_H__
 #include "lighting.h"
+#include "material.h"
 #include "transformable.h"
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -43,6 +44,10 @@ namespace Metahuman {
 	// 값이 바뀌면 SetHyperboloidParams() 내부에서 build()로 메쉬가 재생성된다 (라이브).
 	void UIHyperboloidPanel(const char* label, Metahuman::IHyperboloidTransformable& geo);
 	void UILightingPanel(const char* label, Metahuman::LightingValue& lighting);
+
+	// per-instance 외형(머티리얼) 편집. outlineScale/baseColor는 Material 공개 필드라
+	// 복사-편집-Set 없이 위젯에 필드 주소를 직접 넘겨 실시간 편집한다.
+	void UIMaterialPanel(const char* label, Metahuman::Material& mt);
 
 	void UIReshape(int w, int h);
 	void UIMouse(int button, int state, int x, int y);

@@ -6,7 +6,7 @@
 //   1 = ImGui UI 패널 + 입력 캡처 사용 (기본)
 //   0 = ImGui 완전 비활성화
 #ifndef ENABLE_IMGUI
-#define ENABLE_IMGUI 0
+#define ENABLE_IMGUI 1
 #endif
 
 #ifdef __APPLE__
@@ -28,6 +28,7 @@
 #include "resource_management.h"
 #include "skybox.h"
 #include "transformable.h"
+#include "user_interface.h"
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -88,6 +89,11 @@ namespace
 		ParametricValue parametric;
 		bool hasHyperboloid = false;
 		HyperboloidValue hyperboloid;
+		// Material은 모든 모델의 보편 능력 → 구조상 항상 존재. 단 구 json(v2)엔 블록이 없어
+		// hasMaterial로 유무를 구분(없으면 모델 생성 기본값 = outlineScale 1.03 / baseColor 1,1,1 유지).
+		bool hasMaterial = false;
+		float outlineScale = 1.03f;
+		glm::vec3 baseColor{1.0f, 1.0f, 1.0f};
 	};
 
 	glm::vec3 lightDirEye;
@@ -356,6 +362,9 @@ void HandleDisplayEvent()
 			UIParametricPanel(UI::PANEL::PARAMETRIC, *geo);
 		if (auto *hyp = dynamic_cast<IHyperboloidTransformable *>(model))
 			UIHyperboloidPanel(UI::PANEL::HYPERBOLOID, *hyp);
+		// Material은 모든 모델의 보편 능력 → 캐스트 없이 접근자로 노출 (per-instance outlineScale/baseColor)
+		if (model)
+			UIMaterialPanel(UI::PANEL::MATERIAL, model->GetMaterial());
 		UILightingPanel(UI::PANEL::LIGHTING, g_lighting.GetValue());
 
 		// 런타임중 모델 추가.
@@ -500,48 +509,68 @@ bool AddModel(ModelType type, int id, int variant)
 	case ModelType::KeroroHead:
 		renderer.AddModel(make_unique<KeroroHead>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_FACE].get(),
-		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()}
-		));
+		    vector<ITechnique*>{
+			g_backfaceOutlineTechnique.get(), 
+			g_textureTechnique.get(),
+			g_cartoonTechnique.get()
+		}));
 		break;
 	case ModelType::KeroroBody:
 		renderer.AddModel(make_unique<KeroroBody>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_BODY].get(),
-		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()}
-		));
+		    vector<ITechnique*>{
+			g_backfaceOutlineTechnique.get(), 
+			g_textureTechnique.get(),
+			g_cartoonTechnique.get()
+		}));
 		break;
 	case ModelType::KeroroHand:
 		renderer.AddModel(make_unique<KeroroHand>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
-		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()},
-		    variant
+		    vector<ITechnique*>{
+			g_backfaceOutlineTechnique.get(), 
+			g_textureTechnique.get(),
+			g_cartoonTechnique.get()}
+			,variant
 		));
 		break;
 	case ModelType::KeroroArm:
 		renderer.AddModel(make_unique<KeroroArm>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
-		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()},
-		    variant
+		    vector<ITechnique*>{
+			g_backfaceOutlineTechnique.get(), 
+			g_textureTechnique.get(),
+			g_cartoonTechnique.get()}
+			,variant
 		));
 		break;
 	case ModelType::KeroroLeg:
 		renderer.AddModel(make_unique<KeroroLeg>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
-		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()},
-		    variant
+		    vector<ITechnique*>{
+			g_backfaceOutlineTechnique.get(), 
+			g_textureTechnique.get(),
+			g_cartoonTechnique.get()}
+			,variant
 		));
 		break;
 	case ModelType::KeroroFoot:
 		renderer.AddModel(make_unique<KeroroFoot>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_SKIN].get(),
-		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()},
-		    variant
+		    vector<ITechnique*>{
+			g_backfaceOutlineTechnique.get(), 
+			g_textureTechnique.get(),
+			g_cartoonTechnique.get()}
+			,variant
 		));
 		break;
 	case ModelType::KeroroHat:
 		renderer.AddModel(make_unique<KeroroHat>(
 		    g_rm.textures[TEXTURE::TEX_KERORO_HAT].get(),
-		    vector<ITechnique*>{g_backfaceOutlineTechnique.get(), g_cartoonTechnique.get()}
-		));
+		    vector<ITechnique*>{
+			g_alphaTestTechnique.get(),
+			g_cartoonTechnique.get()
+		}));
 		break;
 	}
 	/*
@@ -584,6 +613,13 @@ bool AddModelState(const SceneModelState &state)
 			if (auto *hyp = dynamic_cast<IHyperboloidTransformable *>(model))
 				hyp->SetHyperboloidParams(state.hyperboloid);
 		}
+		// Material은 캐스트 없이 베이스 접근자로 적용 (모든 모델 보유).
+		if (state.hasMaterial)
+		{
+			Material &mt = model->GetMaterial();
+			mt.outlineScale = state.outlineScale;
+			mt.baseColor = state.baseColor;
+		}
 	}
 	return true;
 }
@@ -602,6 +638,7 @@ bool LoadSceneState(const char *path)
 	bool inUv = false;
 	bool inParametric = false;
 	bool inHyperboloid = false;
+	bool inMaterial = false;
 	string line;
 
 	while (getline(in, line))
@@ -618,6 +655,7 @@ bool LoadSceneState(const char *path)
 			inUv = false;
 			inParametric = false;
 			inHyperboloid = false;
+			inMaterial = false;
 			continue;
 		}
 
@@ -641,6 +679,7 @@ bool LoadSceneState(const char *path)
 			inUv = false;
 			inParametric = false;
 			inHyperboloid = false;
+			inMaterial = false;
 			continue;
 		}
 		if (line.find("\"uv\"") != string::npos)
@@ -649,6 +688,7 @@ bool LoadSceneState(const char *path)
 			inUv = true;
 			inParametric = false;
 			inHyperboloid = false;
+			inMaterial = false;
 			continue;
 		}
 		if (line.find("\"parametric\"") != string::npos)
@@ -657,6 +697,7 @@ bool LoadSceneState(const char *path)
 			inUv = false;
 			inParametric = true;
 			inHyperboloid = false;
+			inMaterial = false;
 			current.hasParametric = true;
 			continue;
 		}
@@ -666,7 +707,18 @@ bool LoadSceneState(const char *path)
 			inUv = false;
 			inParametric = false;
 			inHyperboloid = true;
+			inMaterial = false;
 			current.hasHyperboloid = true;
+			continue;
+		}
+		if (line.find("\"material\"") != string::npos)
+		{
+			inTransform = false;
+			inUv = false;
+			inParametric = false;
+			inHyperboloid = false;
+			inMaterial = true;
+			current.hasMaterial = true;
 			continue;
 		}
 
@@ -718,6 +770,15 @@ bool LoadSceneState(const char *path)
 				continue;
 		}
 
+		if (inMaterial)
+		{
+			if (ScanFloatLine(line, "        \"outlineScale\": %f", current.outlineScale) == 1)
+				continue;
+			if (ScanFloat3Line(line, "        \"baseColor\": [%f, %f, %f]",
+			                   current.baseColor.x, current.baseColor.y, current.baseColor.z) == 3)
+				continue;
+		}
+
 		if (line.rfind("    }", 0) == 0)
 		{
 			loadedStates.push_back(current);
@@ -726,6 +787,7 @@ bool LoadSceneState(const char *path)
 			inUv = false;
 			inParametric = false;
 			inHyperboloid = false;
+			inMaterial = false;
 		}
 	}
 
@@ -824,7 +886,7 @@ bool SaveSceneState(const char *path)
 		return false;
 
 	out << "{\n";
-	out << "  \"version\": 2,\n";
+	out << "  \"version\": 3,\n";
 	out << "  \"selectedModelIndex\": " << g_selectedModelIndex << ",\n";
 	out << "  \"models\": [\n";
 	for (size_t i = 0; i < g_modelMetas.size(); ++i)
@@ -845,7 +907,8 @@ bool SaveSceneState(const char *path)
 		out << "        \"translate\": [" << xform.translate.x << ", " << xform.translate.y << ", " << xform.translate.z << "],\n";
 		out << "        \"rotateDeg\": [" << xform.eulerDeg.x << ", " << xform.eulerDeg.y << ", " << xform.eulerDeg.z << "],\n";
 		out << "        \"scale\": [" << xform.scale.x << ", " << xform.scale.y << ", " << xform.scale.z << "]\n";
-		out << "      }" << ((uvt || geo || hyp) ? ",\n" : "\n");
+		// Material 블록이 항상 마지막에 붙으므로 앞 블록들은 무조건 콤마로 닫는다.
+		out << "      },\n";
 		if (uvt)
 		{
 			const UVValue &uv = uvt->GetUV();
@@ -853,7 +916,7 @@ bool SaveSceneState(const char *path)
 			out << "        \"offset\": [" << uv.offset.x << ", " << uv.offset.y << "],\n";
 			out << "        \"scale\": [" << uv.scale.x << ", " << uv.scale.y << "],\n";
 			out << "        \"rotationDeg\": " << uv.rotationDeg << "\n";
-			out << "      }" << ((geo || hyp) ? ",\n" : "\n");
+			out << "      },\n";
 		}
 		if (geo)
 		{
@@ -862,7 +925,7 @@ bool SaveSceneState(const char *path)
 			out << "        \"uRange\": [" << p.uStart << ", " << p.uEnd << "],\n";
 			out << "        \"vRange\": [" << p.vStart << ", " << p.vEnd << "],\n";
 			out << "        \"resolution\": [" << p.uRes << ", " << p.vRes << "]\n";
-			out << "      }" << (hyp ? ",\n" : "\n");
+			out << "      },\n";
 		}
 		if (hyp)
 		{
@@ -871,8 +934,14 @@ bool SaveSceneState(const char *path)
 			out << "        \"radius\": " << h.radius << ",\n";
 			out << "        \"height\": " << h.height << ",\n";
 			out << "        \"shape\": " << h.shape << "\n";
-			out << "      }\n";
+			out << "      },\n";
 		}
+		// Material은 모든 모델이 보유 → 항상 마지막 블록으로 출력.
+		const Material &mt = model->GetMaterial();
+		out << "      \"material\": {\n";
+		out << "        \"outlineScale\": " << mt.outlineScale << ",\n";
+		out << "        \"baseColor\": [" << mt.baseColor.x << ", " << mt.baseColor.y << ", " << mt.baseColor.z << "]\n";
+		out << "      }\n";
 		out << "    }" << (i + 1 < g_modelMetas.size() ? "," : "") << "\n";
 	}
 	out << "  ]\n";
